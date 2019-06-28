@@ -216,20 +216,20 @@ export default class ChartsContainer extends Component {
   };
 
   generateEmissionScatterData = () => {
-    if (this.chartsDataFlowStatus.fuelDataFlowPause) return;
+    if (this.chartsDataFlowStatus.emissionDataFlowPause) return;
     const emissionScatterDataCopy = Object.assign(
       {},
       this.state.emissionScatterData
     );
     emissionScatterDataCopy.datasets[0].data = this.getScatterDataSet();
     this.setState({ emissionScatterData: emissionScatterDataCopy });
-    setTimeout(this.generateFuelData, Math.random() * 1.5 * 1000);
+    setTimeout(this.generateEmissionScatterData, Math.random() * 1.5 * 1000);
   };
 
   componentDidMount() {
-    this.generateLineData();
-    this.generateRPMLineData();
-    this.generateFuelData();
+    Object.keys(this.graphNameGeneratorMap).forEach(key => {
+      this.graphNameGeneratorMap[key]();
+    });
   }
 
   componentWillReceiveProps(props) {
@@ -245,7 +245,8 @@ export default class ChartsContainer extends Component {
       chartsDataFlowStatus: Object.assign({}, this.chartsDataFlowStatus, {
         speedDataFlowPause: props.pauseAllGraphsFlow,
         rpmDataFlowPause: props.pauseAllGraphsFlow,
-        fuelDataFlowPause: props.pauseAllGraphsFlow
+        fuelDataFlowPause: props.pauseAllGraphsFlow,
+        emissionDataFlowPause: props.pauseAllGraphsFlow
       })
     });
   }
@@ -318,7 +319,7 @@ export default class ChartsContainer extends Component {
       <div className="charts-container ">
         <div className="row  justify-content-center">
           {/* Speed Graph */}
-          <div className="col-lg-4 col-md-6 m-4 h-100" align="center">
+          <div className="col-xl-4 col-lg-6 col-md-6 m-4 h-100" align="center">
             <LineChart
               title="Speed"
               graphName="speedDataFlowPause"
@@ -329,7 +330,7 @@ export default class ChartsContainer extends Component {
             />
           </div>
           {/* RPM Graph */}
-          <div className="col-lg-4 col-md-6 m-4 h-100" align="center">
+          <div className="col-xl-4 col-lg-6 col-md-6 m-4 h-100" align="center">
             <LineChart
               title="RPM"
               graphName="rpmDataFlowPause"
@@ -339,10 +340,10 @@ export default class ChartsContainer extends Component {
               dataFlowPause={this.state.chartsDataFlowStatus.rpmDataFlowPause}
             />
           </div>
-        </div>
-        <div className="row justify-content-center">
+          {/* </div>
+        <div className="row justify-content-center"> */}
           {/* Doughnut Chart */}
-          <div className="col-lg-4 col-md-6 m-4 h-100" align="center">
+          <div className="col-xl-4 col-lg-6 col-md-6 m-4 h-100" align="center">
             <DoughnutChart
               title="Fuel Usage"
               graphName="fuelDataFlowPause"
@@ -353,7 +354,17 @@ export default class ChartsContainer extends Component {
             />
           </div>
           {/* Scatter Chart (Emissions) */}
-          {/* <ScatterChart title="Emission" data={this.state.emissionScatterData} onGraphFlowBtnClick={} */}
+          <div className="col-xl-4 col-lg-6 col-md-6 m-4 h-100" align="center">
+            <ScatterChart
+              title="Emission"
+              graphName="emissionDataFlowPause"
+              data={this.state.emissionScatterData}
+              onGraphFlowBtnClick={this.onGraphFlowBtnClick}
+              dataFlowPause={
+                this.state.chartsDataFlowStatus.emissionDataFlowPause
+              }
+            />
+          </div>
         </div>
       </div>
     );
