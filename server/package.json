@@ -1,0 +1,11 @@
+{
+  "name": "avl-realtime-can-streamer",
+  "version": "1.0.0",
+  "description": "A server project implemented to keep track of cars' CAN data via MQTT and WebSockets.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Azad Yasar",
+  "license": "ISC"
+}
