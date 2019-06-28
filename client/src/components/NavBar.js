@@ -68,8 +68,8 @@ export default class NavBar extends Component {
                     className="dropdown-menu"
                     aria-labelledby="navbarDropdownMenuLink"
                   >
-                    <Link className="dropdown-item" to="#">
-                      Action
+                    <Link className="dropdown-item" to="/messages">
+                      MQTT
                     </Link>
                     <Link className="dropdown-item" to="#">
                       Another Action

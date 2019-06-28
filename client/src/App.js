@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 import "./App.css";
 import { Switch, Route } from "react-router-dom";
+import classNames from "classnames";
 import Comp1 from "./components/Comp1";
 import NavBar from "./components/NavBar";
 import ChartsContainer from "./components/ChartsContainer";
-import classNames from "classnames";
+import MessagesMQTT from "./components/MessagesMQTT";
 
 export default class App extends Component {
   constructor(props) {
@@ -32,6 +33,12 @@ export default class App extends Component {
                 {...routeProps}
                 pauseAllGraphsFlow={this.state.pauseAllGraphsFlow}
               />
+            )}
+          />
+          <Route
+            path="/messages"
+            render={routeProps => (
+              <MessagesMQTT {...routeProps} propTest="test" />
             )}
           />
         </Switch>

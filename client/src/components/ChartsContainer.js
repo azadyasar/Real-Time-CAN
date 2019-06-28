@@ -18,6 +18,7 @@ export default class ChartsContainer extends Component {
     super(props);
 
     this.dataLengthLimit = 15;
+
     this.chartsDataFlowStatus = {
       speedDataFlowPause: props.pauseAllGraphsFlow || true,
       rpmDataFlowPause: props.pauseAllGraphsFlow || true,
@@ -99,7 +100,7 @@ export default class ChartsContainer extends Component {
             pointHoverBorderWidth: 5,
             pointRadius: 5,
             pointHitRadius: 10,
-            showLine: true,
+            showLine: false,
             data: function() {
               let dataTmp = [];
               for (let i = 0; i < this.dataLengthLimit; i++) {
@@ -223,7 +224,7 @@ export default class ChartsContainer extends Component {
     );
     emissionScatterDataCopy.datasets[0].data = this.getScatterDataSet();
     this.setState({ emissionScatterData: emissionScatterDataCopy });
-    setTimeout(this.generateEmissionScatterData, Math.random() * 1.5 * 1000);
+    setTimeout(this.generateEmissionScatterData, Math.random() * 6 * 1000);
   };
 
   componentDidMount() {
