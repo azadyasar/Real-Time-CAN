@@ -49,7 +49,7 @@ export default class NavBar extends Component {
 
                 <li className="nav-item">
                   <Link className="nav-link disabled" to="/disabled">
-                    Disabled
+                    Dashboard
                   </Link>
                 </li>
 
@@ -62,7 +62,7 @@ export default class NavBar extends Component {
                     aria-haspopup="true"
                     aria-expanded="false"
                   >
-                    Dropdown Link
+                    Connections
                   </Link>
                   <div
                     className="dropdown-menu"
@@ -71,11 +71,11 @@ export default class NavBar extends Component {
                     <Link className="dropdown-item" to="/messages">
                       MQTT
                     </Link>
-                    <Link className="dropdown-item" to="#">
-                      Another Action
+                    <Link className="dropdown-item disabled" to="#">
+                      WebSocket
                     </Link>
-                    <Link className="dropdown-item" to="#">
-                      3rd Action
+                    <Link className="dropdown-item disabled" to="#">
+                      HTTP
                     </Link>
                   </div>
                 </li>

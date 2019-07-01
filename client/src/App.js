@@ -1,7 +1,11 @@
 import React, { Component } from "react";
-import "./App.css";
 import { Switch, Route } from "react-router-dom";
 import classNames from "classnames";
+import { ToastContainer } from "react-toastify";
+
+import "./App.css";
+import "react-toastify/dist/ReactToastify.css";
+
 import Comp1 from "./components/Comp1";
 import NavBar from "./components/NavBar";
 import ChartsContainer from "./components/ChartsContainer";
@@ -23,6 +27,7 @@ export default class App extends Component {
   render() {
     return (
       <div className="App">
+        <ToastContainer />
         <NavBar />
         <Switch>
           <Route exact path="/" component={Comp1} />

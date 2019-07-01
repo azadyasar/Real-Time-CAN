@@ -1,22 +1,145 @@
+/* eslint-disable no-unused-expressions */
 import React, { Component } from "react";
 import classNames from "classnames";
 import mqtt from "mqtt";
+import { toast } from "react-toastify";
+import pahoMqtt from "paho-mqtt";
 
 export default class MessagesMQTT extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      mqttHost: "",
-      mqttPort: 111,
+      mqttBrokerInfo: {
+        mqttHost: "mqtt://m24.cloudmqtt.com",
+        mqttPort: 39392,
+        mqttUsername: "iwqksryy",
+        mqttPassword: "	Z8EH2QkXg4ni"
+      },
       isConnected: false,
       isConnecting: false
     };
+
+    this.mqttClient = null;
+    this.BOTTOM_TOASTER_TIMEOUT_DURATION = 5 * 1000;
   }
+
+  componentWillUnmount() {
+    if (this.mqttClient) this.mqttClient.end();
+  }
+
+  connectToMqttBroker = () => {
+    const mqttConnectionOptions = {
+      clientId:
+        "Nodejs_Client" +
+        Math.random()
+          .toString(16)
+          .substr(2, 8),
+      host: this.state.mqttBrokerInfo.mqttHost,
+      port: this.state.mqttBrokerInfo.mqttPort,
+      keepalive: 60,
+      reconnectPeriod: 1000,
+      protocolId: "MQIsdp",
+      protocolVersion: 3,
+      clean: true,
+      encoding: "utf8"
+    };
+
+    if (this.state.mqttBrokerInfo.mqttUsername !== "")
+      mqttConnectionOptions.username = this.state.mqttBrokerInfo.mqttUsername;
+    if (this.state.mqttBrokerInfo.mqttPassword !== "")
+      mqttConnectionOptions.password = this.state.mqttBrokerInfo.mqttPassword;
+
+    console.log("Mqtt Options: ", mqttConnectionOptions);
+
+    this.mqttClient = mqtt.connect(
+      this.state.mqttBrokerInfo.mqttHost,
+      mqttConnectionOptions
+    );
+    this.mqttClient.on("connect", this.mqttCallbackOnConnect);
+    this.mqttClient.on("error", this.mqttCallbackOnError);
+    this.mqttClient.on("disconnect", this.mqttCallbackOnDisconnect);
+  };
+
+  connectToPahoMqtt = () => {
+    const client = new pahoMqtt.Client(
+      this.state.mqttBrokerInfo.mqttHost,
+      this.state.mqttBrokerInfo.mqttPort,
+      "",
+      "browser_mqtt_client"
+    );
+    const options = {
+      userName: this.state.mqttBrokerInfo.mqttUsername,
+      password: this.state.mqttBrokerInfo.mqttPassword
+    };
+    client.connect(options);
+  };
+
+  mqttCallbackOnConnect = () => {
+    console.log("Mqtt connected succesfully");
+    this.mqttClient.subscribe("+/test", this.mqttCallbackOnTestMsg);
+  };
+
+  mqttCallbackOnTestMsg = (topic, message) => {
+    console.log("Message received. Topic: ", topic, " Message: ", message);
+  };
+
+  mqttCallbackOnError = error => {
+    console.error("Mqtt connection failed with error: ", error);
+  };
+
+  mqttCallbackOnDisconnect = () => {
+    console.log("Mqtt client disconnected.");
+  };
+
+  onMQTTBrokerDetailsSaveBtnClick = event => {
+    event.preventDefault();
+
+    console.debug("State: ", this.state);
+
+    this.connectToMqttBroker();
+    // this.connectToPahoMqtt();
+
+    const mqttServerModalElement = document.getElementById(
+      "mqttServerDetailsModal"
+    );
+    if (mqttServerModalElement)
+      mqttServerModalElement.toggleAttribute("aria-hidden");
+    this.bottomToast("Connecting to the server...");
+    this.setState({
+      isConnected: false,
+      isConnecting: true
+    });
+
+    // REPLACE
+    setTimeout(() => {
+      this.setState({
+        isConnected: true,
+        isConnecting: false
+      });
+    }, 5000);
+  };
+
+  onMqttServerDetailsChange = event => {
+    event.preventDefault();
+
+    const mqttBrokerInfoCopy = Object.assign({}, this.state.mqttBrokerInfo);
+    mqttBrokerInfoCopy[event.target.id] = event.target.value;
+    this.setState({
+      mqttBrokerInfo: mqttBrokerInfoCopy
+    });
+  };
 
   render() {
     return (
       <div className="mqtt-container">
+        {/* Toast Container */}
+        <div id="toast">
+          <div id="img">
+            <i className="fa fas fa-signal" />
+          </div>
+          <div id="desc" className="desc" />
+        </div>
         {/* MQTT Connection Status */}
         <div className="mqtt-connection-status" align="center">
           <button
@@ -27,7 +150,7 @@ export default class MessagesMQTT extends Component {
               "btn-warning": this.state.isConnecting && !this.state.isConnected
             })}
           >
-            Connection <i className="fa fas fa-signal" />
+            <i className="fa fas fa-signal" />
           </button>
         </div>
         <div
@@ -64,6 +187,8 @@ export default class MessagesMQTT extends Component {
                         className="form-control"
                         id="mqttHost"
                         placeholder="m12.cloudmqtt.com"
+                        value={this.state.mqttBrokerInfo.mqttHost}
+                        onChange={this.onMqttServerDetailsChange}
                       />
                     </div>
                     <div className="form-group col-md-6">
@@ -72,6 +197,8 @@ export default class MessagesMQTT extends Component {
                         type="number"
                         className="form-control"
                         id="mqttPort"
+                        value={this.state.mqttBrokerInfo.mqttPort}
+                        onChange={this.onMqttServerDetailsChange}
                         placeholder="5555"
                       />
                     </div>
@@ -81,8 +208,10 @@ export default class MessagesMQTT extends Component {
                     <input
                       type="text"
                       className="form-control"
-                      id="username"
+                      id="mqttUsername"
                       placeholder="Username (if any)"
+                      value={this.state.mqttBrokerInfo.mqttUsername}
+                      onChange={this.onMqttServerDetailsChange}
                     />
                   </div>
                   <div className="form-group">
@@ -90,8 +219,10 @@ export default class MessagesMQTT extends Component {
                     <input
                       type="password"
                       className="form-control"
-                      id="password"
+                      id="mqttPassword"
                       placeholder="Password (if any)"
+                      value={this.state.mqttBrokerInfo.mqttPassword}
+                      onChange={this.onMqttServerDetailsChange}
                     />
                   </div>
                 </form>
@@ -104,7 +235,13 @@ export default class MessagesMQTT extends Component {
                 >
                   Close
                 </button>
-                <button type="button" className="btn btn-primary">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  data-toggle="modal"
+                  data-target="#mqttServerDetailsModal"
+                  onClick={this.onMQTTBrokerDetailsSaveBtnClick}
+                >
                   Save changes
                 </button>
               </div>
@@ -131,4 +268,19 @@ export default class MessagesMQTT extends Component {
       </div>
     );
   }
+
+  bottomToast = text => {
+    toast.success("Connected");
+    const toastElement = document.getElementById("toast");
+    if (!toastElement) {
+      console.error("toastElement not found");
+      return;
+    }
+    const toastText = toastElement.getElementsByClassName("desc")[0];
+    if (toastText) toastText.textContent = text;
+    toastElement.className = "show";
+    setTimeout(() => {
+      toastElement.className = toastElement.className.replace("show", "");
+    }, this.BOTTOM_TOASTER_TIMEOUT_DURATION);
+  };
 }
