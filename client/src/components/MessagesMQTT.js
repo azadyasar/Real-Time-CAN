@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import MqttShutdownModal from "./MqttShutdownModal";
 import MqttBrokerDetailsModal from "./MqttBrokerDetailsModal";
 import MqttSubTopicModal from "./MqttSubTopicModal";
+import MqttStatusBar from "./MqttStatusBar";
 
 export default class MessagesMQTT extends Component {
   constructor(props) {
@@ -14,6 +15,7 @@ export default class MessagesMQTT extends Component {
 
     this.state = {
       subscribeTopics: ["avl/+/message"],
+      receivedMessages: [],
       isConnected: false,
       isConnecting: false
     };
@@ -118,16 +120,26 @@ export default class MessagesMQTT extends Component {
     console.log("Mqtt connected succesfully");
     console.log(this.mqttClient.connected);
     this.mqttClient.subscribe("avl/message/#", console.log);
+    this.state.subscribeTopics.forEach(topic =>
+      this.mqttClient.subscribe(topic)
+    );
   };
 
   mqttCallbackOnMessage = (topic, message) => {
-    toast.info("Message received. Topic: ", topic);
+    toast.info("Message received. Topic: " + topic);
     console.log(
       "Message received. Topic: ",
       topic,
       " Message: ",
       message.toString()
     );
+    const receivedMessagesCopy = this.state.receivedMessages.concat({
+      topic,
+      message
+    });
+    this.setState({
+      receivedMessages: receivedMessagesCopy
+    });
   };
 
   mqttCallbackOnError = error => {
@@ -172,6 +184,10 @@ export default class MessagesMQTT extends Component {
   onShutdownMQTTConnectionBtnClick = event => {
     event.preventDefault();
 
+    if (this.mqttConnectingBlinkInterval) {
+      clearInterval(this.mqttConnectingBlinkInterval);
+      this.mqttConnectingBlinkInterval = null;
+    }
     if (
       this.mqttClient &&
       (this.mqttClient.connected || this.mqttClient.reconnecting)
@@ -238,50 +254,12 @@ export default class MessagesMQTT extends Component {
             <div id="desc" className="desc" />
           </div>
           {/* MQTT Connection Status */}
-          <div className="mqtt-connection-status" align="center">
-            <div className="btn-group" role="group">
-              <button
-                type="button"
-                className={classNames("btn", {
-                  "btn-outline-success": this.state.isConnected,
-                  "btn-outline-warning":
-                    this.state.isConnecting && !this.state.isConnected,
-                  "btn-outline-danger":
-                    !this.state.isConnected && !this.state.isConnecting
-                })}
-                data-trigger="focus"
-                data-toggle="popover"
-                title="MQTT Connection Status"
-                data-placement="bottom"
-                data-content={this.getMqttBrokerInfoTxt()}
-              >
-                <i className="fa fas fa-signal" />
-              </button>
-              <button
-                type="button"
-                id="subTopicPopoverBtn"
-                className="btn"
-                data-trigger="focus"
-                data-html="true"
-                data-toggle="popover"
-                title="Subscribed Topics"
-                data-placement="bottom"
-                data-content={this.getSubscribedTopicsTxt()}
-              >
-                <i className="fa fas fa-list" />
-              </button>
-              <button
-                type="button"
-                className={classNames("btn", {
-                  "btn-light": this.state.isConnected
-                })}
-                data-toggle="modal"
-                data-target="#mqttDisconnectModal"
-              >
-                <i className="fa fas fa-plug" />
-              </button>
-            </div>
-          </div>
+          <MqttStatusBar
+            isConnected={this.state.isConnected}
+            isConnecting={this.state.isConnecting}
+            getMqttBrokerInfoTxt={this.getMqttBrokerInfoTxt}
+            getSubscribedTopicsTxt={this.getSubscribedTopicsTxt}
+          />
           <div className="row justify-content-center m-5 w-25">
             <div className="col-3" align="center">
               <button
@@ -308,6 +286,7 @@ export default class MessagesMQTT extends Component {
           <div className="row justify-content-center m-5">
             <div className="col-6" align="center">
               <h2>Messages over MQTT</h2>
+              <ul>{this.getReceivedMessagesHTML()}</ul>
             </div>
           </div>
         </div>
@@ -386,5 +365,15 @@ export default class MessagesMQTT extends Component {
       `;
     });
     return subTopicsTxt;
+  };
+
+  getReceivedMessagesHTML = () => {
+    return this.state.receivedMessages.map((message, index) => {
+      return (
+        <li key={index}>
+          {message.topic}: {message.message.toString()}
+        </li>
+      );
+    });
   };
 }
