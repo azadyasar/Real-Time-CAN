@@ -17,6 +17,7 @@ export default class MqttSubTopicModal extends Component {
 
   onSubscribeBtnClick = event => {
     event.preventDefault();
+    this.setState({ subTopicValue: "" });
     this.props.onSubTopicSubmit(this.state.subTopicValue);
   };
 

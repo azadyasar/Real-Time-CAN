@@ -16,8 +16,12 @@
   align-items: center;
   z-index: 9999;
   position: fixed;
-  top: 10vh;
+  top: 75px;
   right: 2vw;
+}
+
+.popover {
+  white-space: pre-line;
 }
 
 /* TOAST CSS */

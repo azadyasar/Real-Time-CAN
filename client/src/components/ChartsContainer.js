@@ -20,10 +20,10 @@ export default class ChartsContainer extends Component {
     this.dataLengthLimit = 15;
 
     this.chartsDataFlowStatus = {
-      speedDataFlowPause: props.pauseAllGraphsFlow || true,
-      rpmDataFlowPause: props.pauseAllGraphsFlow || true,
-      fuelDataFlowPause: props.pauseAllGraphsFlow || true,
-      emissionDataFlowPause: props.pauseAllGraphsFlow || true
+      speedDataFlowPause: true,
+      rpmDataFlowPause: true,
+      fuelDataFlowPause: true,
+      emissionDataFlowPause: true
     };
     this.graphNameGeneratorMap = {
       speedDataFlowPause: this.generateLineData,
@@ -33,10 +33,10 @@ export default class ChartsContainer extends Component {
     };
     this.state = {
       chartsDataFlowStatus: {
-        speedDataFlowPause: props.pauseAllGraphsFlow || true,
-        rpmDataFlowPause: props.pauseAllGraphsFlow || true,
-        fuelDataFlowPause: props.pauseAllGraphsFlow || true,
-        emissionDataFlowPause: props.pauseAllGraphsFlow || true
+        speedDataFlowPause: true,
+        rpmDataFlowPause: true,
+        fuelDataFlowPause: true,
+        emissionDataFlowPause: true
       },
       lineData: {
         labels: [],
@@ -313,6 +313,11 @@ export default class ChartsContainer extends Component {
         [event.target.name]: !this.state.chartsDataFlowStatus[event.target.name]
       })
     });
+  };
+
+  onStartAllGraphFlowBtnClick = event => {
+    event.preventDefault();
+    this.setState({ pauseAllGraphsFlow: !this.state.pauseAllGraphsFlow });
   };
 
   render() {
