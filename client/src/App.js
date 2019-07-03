@@ -27,7 +27,7 @@ export default class App extends Component {
   render() {
     return (
       <div className="App">
-        <ToastContainer />
+        <ToastContainer position="top-left" autoClose={5000} />
         <NavBar />
         <Switch>
           <Route exact path="/" component={Comp1} />
