@@ -36,9 +36,7 @@ export default function MqttStatusBar(props) {
         </button>
         <button
           type="button"
-          className={classNames("btn", {
-            "btn-light": props.isConnected
-          })}
+          className="btn"
           data-toggle="modal"
           data-target="#mqttDisconnectModal"
         >

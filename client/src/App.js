@@ -15,7 +15,10 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      pauseAllGraphsFlow: true
+      pauseAllGraphsFlow: true,
+      mqttClient: null,
+      mqttClientId: "",
+      mqttBrokerInfo: null
     };
   }
 
@@ -24,7 +27,26 @@ export default class App extends Component {
     this.setState({ pauseAllGraphsFlow: !this.state.pauseAllGraphsFlow });
   };
 
+  /**
+   * `mqttConnectionObject` contains
+   * - mqttClient
+   * - mqttCliendId
+   * - mqttBrokerInfo
+   */
+  onMqttConnection = mqttConnectionObject => {
+    this.setState({
+      mqttClient: mqttConnectionObject.mqttClient,
+      mqttClientId: mqttConnectionObject.mqttClientId,
+      mqttBrokerInfo: mqttConnectionObject.mqttBrokerInfo
+    });
+  };
+
+  forceUpdateApp = () => {
+    this.forceUpdate();
+  };
+
   render() {
+    console.debug("App.js render: ", this.state);
     return (
       <div className="App">
         <ToastContainer position="top-left" autoClose={5000} />
@@ -38,6 +60,9 @@ export default class App extends Component {
                 <ChartsContainer
                   {...routeProps}
                   pauseAllGraphsFlow={this.state.pauseAllGraphsFlow}
+                  mqttClient={this.state.mqttClient}
+                  mqttClientId={this.state.mqttClientId}
+                  mqttBrokerInfo={this.state.mqttBrokerInfo}
                 />
                 <ChartsToolbar
                   pauseAllGraphsFlow={this.state.pauseAllGraphsFlow}
@@ -49,7 +74,13 @@ export default class App extends Component {
           <Route
             path="/messages"
             render={routeProps => (
-              <MessagesMQTT {...routeProps} propTest="test" />
+              <MessagesMQTT
+                {...routeProps}
+                mqttClient={this.state.mqttClient}
+                mqttClientId={this.state.mqttClientId}
+                mqttBrokerInfo={this.state.mqttBrokerInfo}
+                onMqttConnection={this.onMqttConnection}
+              />
             )}
           />
         </Switch>

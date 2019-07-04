@@ -20,10 +20,10 @@ export default class ChartsContainer extends Component {
     this.dataLengthLimit = 15;
 
     this.chartsDataFlowStatus = {
-      speedDataFlowPause: true,
-      rpmDataFlowPause: true,
-      fuelDataFlowPause: true,
-      emissionDataFlowPause: true
+      speedDataFlowPause: props.pauseAllGraphsFlow,
+      rpmDataFlowPause: props.pauseAllGraphsFlow,
+      fuelDataFlowPause: props.pauseAllGraphsFlow,
+      emissionDataFlowPause: props.pauseAllGraphsFlow
     };
     this.graphNameGeneratorMap = {
       speedDataFlowPause: this.generateLineData,
@@ -33,10 +33,10 @@ export default class ChartsContainer extends Component {
     };
     this.state = {
       chartsDataFlowStatus: {
-        speedDataFlowPause: true,
-        rpmDataFlowPause: true,
-        fuelDataFlowPause: true,
-        emissionDataFlowPause: true
+        speedDataFlowPause: props.pauseAllGraphsFlow,
+        rpmDataFlowPause: props.pauseAllGraphsFlow,
+        fuelDataFlowPause: props.pauseAllGraphsFlow,
+        emissionDataFlowPause: props.pauseAllGraphsFlow
       },
       lineData: {
         labels: [],
@@ -132,7 +132,10 @@ export default class ChartsContainer extends Component {
           {
             type: "time",
             time: {
-              unit: "second"
+              unit: "second",
+              displayFormats: {
+                second: "HH:mm:ss"
+              }
             },
             scaleLabel: {
               display: true,
@@ -234,6 +237,7 @@ export default class ChartsContainer extends Component {
   }
 
   componentWillReceiveProps(props) {
+    console.log("Charts container will receive props: ", props);
     Object.keys(this.chartsDataFlowStatus).forEach(key => {
       this.chartsDataFlowStatus[key] = props.pauseAllGraphsFlow;
     });
@@ -407,4 +411,8 @@ export default class ChartsContainer extends Component {
 
 ChartsContainer.propTypes = {
   pauseAllGraphsFlow: PropTypes.bool
+};
+
+ChartsContainer.defaultProps = {
+  pauseAllGraphsFlow: true
 };
