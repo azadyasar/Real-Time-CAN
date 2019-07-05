@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Switch, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import { connect } from "react-redux";
 
 import "./App.css";
 import "react-toastify/dist/ReactToastify.css";
@@ -11,7 +12,14 @@ import ChartsContainer from "./components/ChartsContainer";
 import MessagesMQTT from "./components/MessagesMQTT";
 import ChartsToolbar from "./components/ChartsToolbar";
 
-export default class App extends Component {
+const mapStateToProps = state => {
+  console.debug("App mapStateToProps state: ", state);
+  return {
+    mqttClient: state.mqttClient
+  };
+};
+
+export class ConnectedApp extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -27,26 +35,8 @@ export default class App extends Component {
     this.setState({ pauseAllGraphsFlow: !this.state.pauseAllGraphsFlow });
   };
 
-  /**
-   * `mqttConnectionObject` contains
-   * - mqttClient
-   * - mqttCliendId
-   * - mqttBrokerInfo
-   */
-  onMqttConnection = mqttConnectionObject => {
-    this.setState({
-      mqttClient: mqttConnectionObject.mqttClient,
-      mqttClientId: mqttConnectionObject.mqttClientId,
-      mqttBrokerInfo: mqttConnectionObject.mqttBrokerInfo
-    });
-  };
-
-  forceUpdateApp = () => {
-    this.forceUpdate();
-  };
-
   render() {
-    console.debug("App.js render: ", this.state);
+    console.debug("App.js render: this: ", this);
     return (
       <div className="App">
         <ToastContainer position="top-left" autoClose={5000} />
@@ -73,18 +63,14 @@ export default class App extends Component {
           />
           <Route
             path="/messages"
-            render={routeProps => (
-              <MessagesMQTT
-                {...routeProps}
-                mqttClient={this.state.mqttClient}
-                mqttClientId={this.state.mqttClientId}
-                mqttBrokerInfo={this.state.mqttBrokerInfo}
-                onMqttConnection={this.onMqttConnection}
-              />
-            )}
+            render={routeProps => <MessagesMQTT {...routeProps} />}
           />
         </Switch>
       </div>
     );
   }
 }
+
+const App = connect(mapStateToProps)(ConnectedApp);
+
+export default App;
