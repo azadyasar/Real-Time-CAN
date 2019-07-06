@@ -6,9 +6,10 @@ import { toast } from "react-toastify";
 import { connect } from "react-redux";
 import { updateMqttConnection, mqttTextMessageReceived } from "../actions";
 
-import MqttShutdownModal from "./MqttShutdownModal";
-import MqttBrokerDetailsModal from "./MqttBrokerDetailsModal";
-import MqttSubTopicModal from "./MqttSubTopicModal";
+import MqttShutdownModal from "./Modals/MqttShutdownModal";
+import MqttBrokerDetailsModal from "./Modals/MqttBrokerDetailsModal";
+import MqttSubTopicModal from "./Modals/MqttSubTopicModal";
+import MqttPubMsgModal from "./Modals/MqttPubMsgModal";
 import MqttStatusBar from "./MqttStatusBar";
 
 const mapDispatchToProps = dispatch => {
@@ -362,6 +363,12 @@ export class ConnectedMessagesMQTT extends Component {
     }, 1500);
   };
 
+  onMqttPubMsgSubmit = payload => {
+    toast.info(
+      "Sending message: " + payload.message + " with topic " + payload.topic
+    );
+  };
+
   render() {
     let isConnected = false;
     if (this.props.mqttClient)
@@ -408,6 +415,11 @@ export class ConnectedMessagesMQTT extends Component {
           onSubTopicSubmit={this.onMqttSubTopicSubmit}
         />
 
+        <MqttPubMsgModal
+          modalId="mqttPubMsgModal"
+          onPubMsgSubmit={this.onMqttPubMsgSubmit}
+        />
+
         <div className="mqtt-container" align="center">
           {/* Toast Container */}
           <div id="toast">
@@ -442,6 +454,16 @@ export class ConnectedMessagesMQTT extends Component {
                 data-target="#mqttSubscribeTopics"
               >
                 Subscribe
+              </button>
+            </div>
+            <div className="col-3" align="center">
+              <button
+                type="button"
+                className="btn btn-primary"
+                data-toggle="modal"
+                data-target="#mqttPubMsgModal"
+              >
+                Publish
               </button>
             </div>
           </div>

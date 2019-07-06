@@ -17,8 +17,8 @@ export default class MqttSubTopicModal extends Component {
 
   onSubscribeBtnClick = event => {
     event.preventDefault();
-    this.setState({ subTopicValue: "" });
     this.props.onSubTopicSubmit(this.state.subTopicValue);
+    this.setState({ subTopicValue: "" });
   };
 
   render() {
@@ -35,7 +35,7 @@ export default class MqttSubTopicModal extends Component {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title" id="subscribeModalLHeader">
-                MQTT Topic Name
+                MQTT Subscribe Topic
               </h5>
               <button
                 type="button"
