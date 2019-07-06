@@ -1,11 +1,13 @@
 import {
   UPDATE_MQTT_CONNECTION,
-  MQTT_TEXT_MESSAGE_RECEIVED
+  MQTT_TEXT_MESSAGE_RECEIVED,
+  CHANGE_ALL_GRAPH_FLOW
 } from "../constants/action-types";
 
 const initialState = {
   mqttClient: null,
-  mqttReceivedTextMessages: []
+  mqttReceivedTextMessages: [],
+  isAllGraphFlowPaused: true
 };
 
 function rootReducer(state = initialState, action) {
@@ -19,6 +21,10 @@ function rootReducer(state = initialState, action) {
         mqttReceivedTextMessages: state.mqttReceivedTextMessages.concat(
           action.payload
         )
+      });
+    case CHANGE_ALL_GRAPH_FLOW:
+      return Object.assign({}, state, {
+        isAllGraphFlowPaused: !state.isAllGraphFlowPaused
       });
     default:
       console.warn("Unrecognized action.type: ", action.type);

@@ -1,7 +1,9 @@
 import React, { Component } from "react";
 import { Switch, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+
 import { connect } from "react-redux";
+import { changeAllGraphFlow } from "./actions";
 
 import "./App.css";
 import "react-toastify/dist/ReactToastify.css";
@@ -15,21 +17,21 @@ import ChartsToolbar from "./components/ChartsToolbar";
 const mapStateToProps = state => {
   console.debug("App mapStateToProps state: ", state);
   return {
-    mqttClient: state.mqttClient
+    mqttClient: state.mqttClient,
+    isAllGraphFlowPaused: state.isAllGraphFlowPaused
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    changeAllGraphFlow: signal => dispatch(changeAllGraphFlow(signal))
   };
 };
 
 export class ConnectedApp extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      pauseAllGraphsFlow: true
-    };
-  }
-
   onStartAllGraphFlowBtnClick = event => {
     event.preventDefault();
-    this.setState({ pauseAllGraphsFlow: !this.state.pauseAllGraphsFlow });
+    this.props.changeAllGraphFlow(null);
   };
 
   render() {
@@ -46,10 +48,10 @@ export class ConnectedApp extends Component {
               <React.Fragment>
                 <ChartsContainer
                   {...routeProps}
-                  pauseAllGraphsFlow={this.state.pauseAllGraphsFlow}
+                  pauseAllGraphsFlow={this.props.isAllGraphFlowPaused}
                 />
                 <ChartsToolbar
-                  pauseAllGraphsFlow={this.state.pauseAllGraphsFlow}
+                  pauseAllGraphsFlow={this.props.isAllGraphFlowPaused}
                   onStartAllGraphFlowBtnClick={this.onStartAllGraphFlowBtnClick}
                 />
               </React.Fragment>
@@ -65,6 +67,9 @@ export class ConnectedApp extends Component {
   }
 }
 
-const App = connect(mapStateToProps)(ConnectedApp);
+const App = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ConnectedApp);
 
 export default App;

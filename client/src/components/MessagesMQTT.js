@@ -24,6 +24,10 @@ const mapStateToProps = state => {
   console.debug("MessagesMQTT mapStateToProps state: ", state);
   return {
     mqttClient: state.mqttClient,
+    isConnected: state.mqttClient
+      ? state.mqttClient.connected &&
+        !(state.mqttClient.disconnecting || state.mqttClient.disconnected)
+      : false,
     mqttReceivedTextMessages: state.mqttReceivedTextMessages
   };
 };
@@ -108,6 +112,11 @@ export class ConnectedMessagesMQTT extends Component {
       this.setState({
         isConnecting
       });
+    if (!this.mqttConnectingBlinkInterval)
+      this.mqttConnectingBlinkInterval = setInterval(
+        this.mqttConnectingBlinkInterval,
+        this.MQTT_STATUS_BLINK_PERIOD
+      );
   }
 
   componentWillUpdate(props) {
@@ -198,9 +207,6 @@ export class ConnectedMessagesMQTT extends Component {
 
   mqttOnConnect = () => {
     toast.success("Connected");
-    this.setState({
-      isConnecting: false
-    });
     if (this.mqttConnectingBlinkInterval) {
       clearInterval(this.mqttConnectingBlinkInterval);
       this.mqttConnectingBlinkInterval = null;
@@ -209,11 +215,15 @@ export class ConnectedMessagesMQTT extends Component {
       clearTimeout(this.checkIfMqttConnectedTimeout);
       this.checkIfMqttConnectedTimeout = null;
     }
+    this.setState({
+      isConnecting: false
+    });
     console.log("Mqtt connected succesfully");
 
-    this.state.subscribeTopics.forEach(topic =>
-      this.mqttClient.subscribe(topic, console.log)
-    );
+    if (this.mqttClient)
+      this.state.subscribeTopics.forEach(topic =>
+        this.mqttClient.subscribe(topic, console.log)
+      );
     this.props.updateMqttConnection(this.mqttClient);
   };
 
@@ -246,21 +256,23 @@ export class ConnectedMessagesMQTT extends Component {
       this.mqttConnectingBlinkInterval = null;
     }
     if (this.mqttClient) this.mqttClient.end();
-    this.props.updateMqttConnection(this.mqttClient);
+    else this.props.updateMqttConnection(null);
+    // this.props.updateMqttConnection(this.mqttClient);
     console.error("Mqtt connection failed with error: ", error);
   };
 
   mqttOnDisconnect = () => {
     toast.error("Disconnected from the broker.");
     if (this.mqttClient) this.mqttClient.end();
-    this.props.updateMqttConnection(this.mqttClient);
+    else this.props.updateMqttConnection(null);
+    // this.props.updateMqttConnection(this.mqttClient);
     console.log("Mqtt client disconnected.");
   };
 
   mqttOnClose = () => {
     toast.info("MQTT connection is closed.");
     if (this.mqttClient) this.mqttClient.end();
-    this.props.updateMqttConnection(this.mqttClient);
+    else this.props.updateMqttConnection(null);
     console.debug("mqttOnClose");
   };
 
@@ -272,15 +284,16 @@ export class ConnectedMessagesMQTT extends Component {
   mqttOnEnd = () => {
     // toast.info("MQTT Connection Ended");
     console.debug("mqttOnEnd");
+    this.props.updateMqttConnection(this.mqttClient);
   };
 
   mqttOnPacketSend = packet => {
-    toast.info("mqttOnPacketSend");
+    // toast.info("mqttOnPacketSend");
     console.debug("mqttOnPacketSend packet: ", packet);
   };
 
   mqttOnPacketReceive = packet => {
-    toast.info("mqttOnPacketReceive");
+    // toast.info("mqttOnPacketReceive");
     console.debug("mqttOnPacketReceive packet: ", packet);
   };
 
@@ -316,9 +329,11 @@ export class ConnectedMessagesMQTT extends Component {
       (this.mqttClient.connected || this.mqttClient.reconnecting)
     ) {
       this.mqttClient.end();
-      this.props.updateMqttConnection(this.mqttClient);
       toast.info("Closing the MQTT connection...");
-    } else toast.warn("MQTT client is not connected");
+    } else {
+      toast.warn("MQTT client is not connected");
+      this.props.updateMqttConnection(null);
+    }
   };
 
   onMqttSubTopicSubmit = subTopicName => {
@@ -348,9 +363,14 @@ export class ConnectedMessagesMQTT extends Component {
   };
 
   render() {
-    const { connected: isConnected } = this.props.mqttClient || {
-      connected: false
-    };
+    let isConnected = false;
+    if (this.props.mqttClient)
+      isConnected =
+        this.props.mqttClient.connected &&
+        !(
+          this.props.mqttClient.disconnecting ||
+          this.props.mqttClient.disconnected
+        );
 
     const { isConnecting } = this.state;
 
@@ -469,7 +489,6 @@ export class ConnectedMessagesMQTT extends Component {
     const { hostname, port } = options || {};
 
     if (!this.mqttClient || !isConnected) {
-      if (this.mqttClient) this.mqttClient.end();
       if (this.mqttConnectingBlinkInterval) {
         clearInterval(this.mqttConnectingBlinkInterval);
         this.mqttConnectingBlinkInterval = null;
@@ -480,7 +499,8 @@ export class ConnectedMessagesMQTT extends Component {
           "Can't connect to MQTT Broker at " + hostname + ":" + port;
       else errorToastText = "MQTT Connection Timeout Error";
       toast.error(errorToastText);
-      this.props.updateMqttConnection(this.mqttClient);
+      if (this.mqttClient) this.mqttClient.end();
+      else this.props.updateMqttConnection(null);
     }
   };
 
