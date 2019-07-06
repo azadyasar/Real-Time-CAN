@@ -23,10 +23,7 @@ export class ConnectedApp extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      pauseAllGraphsFlow: true,
-      mqttClient: null,
-      mqttClientId: "",
-      mqttBrokerInfo: null
+      pauseAllGraphsFlow: true
     };
   }
 
@@ -50,9 +47,6 @@ export class ConnectedApp extends Component {
                 <ChartsContainer
                   {...routeProps}
                   pauseAllGraphsFlow={this.state.pauseAllGraphsFlow}
-                  mqttClient={this.state.mqttClient}
-                  mqttClientId={this.state.mqttClientId}
-                  mqttBrokerInfo={this.state.mqttBrokerInfo}
                 />
                 <ChartsToolbar
                   pauseAllGraphsFlow={this.state.pauseAllGraphsFlow}
