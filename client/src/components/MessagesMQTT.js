@@ -43,7 +43,6 @@ export class ConnectedMessagesMQTT extends Component {
 
     this.mqttClient = props.mqttClient;
     if (props.mqttClient && props.mqttClient.connected) {
-      this.state.isConnected = true;
       this.state.isConnecting = false;
     }
 
@@ -183,10 +182,13 @@ export class ConnectedMessagesMQTT extends Component {
     }
 
     if (this.mqttClient) {
-      this.mqttClient.on("connect", this.mqttCallbackOnConnect);
-      this.mqttClient.on("message", this.mqttCallbackOnMessage);
-      this.mqttClient.on("error", this.mqttCallbackOnError);
-      this.mqttClient.on("disconnect", this.mqttCallbackOnDisconnect);
+      this.mqttClient.on("connect", this.mqttOnConnect);
+      this.mqttClient.on("message", this.mqttOnMessage);
+      this.mqttClient.on("packetsend", this.mqttOnPacketSend);
+      this.mqttClient.on("packetreceive", this.mqttOnPacketReceive);
+      this.mqttClient.on("aaa", this.mqttOnMessage);
+      this.mqttClient.on("error", this.mqttOnError);
+      this.mqttClient.on("disconnect", this.mqttOnDisconnect);
       this.mqttClient.on("offline", this.mqttOnOffline);
       this.mqttClient.on("end", this.mqttOnEnd);
       this.mqttClient.on("close", this.mqttOnClose);
@@ -194,15 +196,18 @@ export class ConnectedMessagesMQTT extends Component {
     this.props.updateMqttConnection(this.mqttClient);
   };
 
-  mqttCallbackOnConnect = () => {
+  mqttOnConnect = () => {
     toast.success("Connected");
     this.setState({
-      isConnected: true,
       isConnecting: false
     });
     if (this.mqttConnectingBlinkInterval) {
       clearInterval(this.mqttConnectingBlinkInterval);
       this.mqttConnectingBlinkInterval = null;
+    }
+    if (this.checkIfMqttConnectedTimeout) {
+      clearTimeout(this.checkIfMqttConnectedTimeout);
+      this.checkIfMqttConnectedTimeout = null;
     }
     console.log("Mqtt connected succesfully");
 
@@ -212,7 +217,7 @@ export class ConnectedMessagesMQTT extends Component {
     this.props.updateMqttConnection(this.mqttClient);
   };
 
-  mqttCallbackOnMessage = (topic, message) => {
+  mqttOnMessage = (topic, message) => {
     toast.info("Message received. Topic: " + topic, {
       autoClose: 2000
     });
@@ -225,7 +230,7 @@ export class ConnectedMessagesMQTT extends Component {
     this.props.mqttTextMessageReceived({ topic, message });
   };
 
-  mqttCallbackOnError = error => {
+  mqttOnError = error => {
     toast.error(
       "MQTT connection error occured. \nDetails: " + error.toString(),
       {
@@ -241,42 +246,42 @@ export class ConnectedMessagesMQTT extends Component {
       this.mqttConnectingBlinkInterval = null;
     }
     if (this.mqttClient) this.mqttClient.end();
-    this.props.updateMqttConnection(null);
+    this.props.updateMqttConnection(this.mqttClient);
     console.error("Mqtt connection failed with error: ", error);
   };
 
-  mqttCallbackOnDisconnect = () => {
+  mqttOnDisconnect = () => {
     toast.error("Disconnected from the broker.");
-    this.setState({
-      isConnecting: false
-    });
-    this.props.updateMqttConnection(null);
+    if (this.mqttClient) this.mqttClient.end();
+    this.props.updateMqttConnection(this.mqttClient);
     console.log("Mqtt client disconnected.");
   };
 
   mqttOnClose = () => {
     toast.info("MQTT connection is closed.");
+    if (this.mqttClient) this.mqttClient.end();
+    this.props.updateMqttConnection(this.mqttClient);
     console.debug("mqttOnClose");
   };
 
   mqttOnOffline = () => {
     console.debug("mqttOnOffline");
-    toast.error("Make sure that you have internet access");
-    if (this.mqttConnectingBlinkInterval) {
-      clearInterval(this.mqttConnectingBlinkInterval);
-      this.mqttConnectingBlinkInterval = null;
-    }
-    if (this.checkIfMqttConnectedTimeout) {
-      clearTimeout(this.checkIfMqttConnectedTimeout);
-      this.checkIfMqttConnectedTimeout = null;
-    }
-    this.mqttClient.end();
-    this.props.updateMqttConnection(null);
+    toast.warn("Make sure that you have internet access");
   };
 
   mqttOnEnd = () => {
     // toast.info("MQTT Connection Ended");
     console.debug("mqttOnEnd");
+  };
+
+  mqttOnPacketSend = packet => {
+    toast.info("mqttOnPacketSend");
+    console.debug("mqttOnPacketSend packet: ", packet);
+  };
+
+  mqttOnPacketReceive = packet => {
+    toast.info("mqttOnPacketReceive");
+    console.debug("mqttOnPacketReceive packet: ", packet);
   };
 
   onMQTTBrokerDetailsSubmit = targetMqttBrokerInfo => {
@@ -311,7 +316,7 @@ export class ConnectedMessagesMQTT extends Component {
       (this.mqttClient.connected || this.mqttClient.reconnecting)
     ) {
       this.mqttClient.end();
-      this.props.updateMqttConnection(null);
+      this.props.updateMqttConnection(this.mqttClient);
       toast.info("Closing the MQTT connection...");
     } else toast.warn("MQTT client is not connected");
   };
@@ -475,7 +480,7 @@ export class ConnectedMessagesMQTT extends Component {
           "Can't connect to MQTT Broker at " + hostname + ":" + port;
       else errorToastText = "MQTT Connection Timeout Error";
       toast.error(errorToastText);
-      this.props.updateMqttConnection(null);
+      this.props.updateMqttConnection(this.mqttClient);
     }
   };
 

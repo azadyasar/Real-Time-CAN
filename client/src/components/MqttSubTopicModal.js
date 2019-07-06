@@ -48,7 +48,12 @@ export default class MqttSubTopicModal extends Component {
             </div>
 
             <div className="modal-body">
-              <form id="mqttSubTopicForm">
+              <form
+                id="mqttSubTopicForm"
+                onSubmit={e => {
+                  e.preventDefault();
+                }}
+              >
                 <div className="form-group row">
                   <label
                     htmlFor="mqttTopicName"
