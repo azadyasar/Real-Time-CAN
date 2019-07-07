@@ -3,6 +3,9 @@ import moment from "moment";
 import "../css/ChartsContainer.css";
 import PropTypes from "prop-types";
 
+import { connect } from "react-redux";
+import { updateLineData } from "../actions";
+
 // Chart Cards
 import LineChart from "./Charts/LineChart";
 import DoughnutChart from "./Charts/DoughnutChart";
@@ -12,6 +15,18 @@ import ScatterChart from "./Charts/ScatterChart";
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+const mapStateToProps = state => {
+  return {
+    lineData: state.lineData
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    updateLineData: newLineData => dispatch(updateLineData(newLineData))
+  };
+};
 
 export default class ChartsContainer extends Component {
   constructor(props) {

@@ -1,13 +1,37 @@
 import {
   UPDATE_MQTT_CONNECTION,
   MQTT_TEXT_MESSAGE_RECEIVED,
-  CHANGE_ALL_GRAPH_FLOW
+  CHANGE_ALL_GRAPH_FLOW,
+  UPDATE_LINE_DATA
 } from "../constants/action-types";
+
+const initialLineData = {
+  labels: [],
+  datasets: [
+    {
+      label: "Temperature",
+      borderCapStyle: "butt",
+      borderJoinStyle: "miter",
+      pointHitRadius: 10,
+      data: [],
+      fill: false, // Don't fill area under the line
+      borderColor: "green", // Line color
+      pointRadius: 5
+    },
+    {
+      label: "Humidity",
+      data: [],
+      fill: false,
+      borderColor: "red"
+    }
+  ]
+};
 
 const initialState = {
   mqttClient: null,
   mqttReceivedTextMessages: [],
-  isAllGraphFlowPaused: true
+  isAllGraphFlowPaused: true,
+  lineData: initialLineData
 };
 
 function rootReducer(state = initialState, action) {
@@ -25,6 +49,10 @@ function rootReducer(state = initialState, action) {
     case CHANGE_ALL_GRAPH_FLOW:
       return Object.assign({}, state, {
         isAllGraphFlowPaused: !state.isAllGraphFlowPaused
+      });
+    case UPDATE_LINE_DATA:
+      return Object.assign({}, state, {
+        lineData: action.payload
       });
     default:
       console.warn("Unrecognized action.type: ", action.type);
