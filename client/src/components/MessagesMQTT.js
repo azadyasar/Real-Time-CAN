@@ -364,9 +364,39 @@ export class ConnectedMessagesMQTT extends Component {
   };
 
   onMqttPubMsgSubmit = payload => {
-    toast.info(
-      "Sending message: " + payload.message + " with topic " + payload.topic
+    const pubMsgToastId = toast(
+      "Sending message: " + payload.message + " with topic " + payload.topic,
+      {
+        autoClose: false
+      }
     );
+
+    if (this.mqttClient && this.mqttClient.connected) {
+      this.mqttClient.publish(
+        payload.topic,
+        payload.message,
+        {
+          qos: payload.qos,
+          retain: payload.retain
+        },
+        err => {
+          console.log("publish cb ", err);
+        }
+      );
+      toast.update(pubMsgToastId, {
+        render: "Message is sent.",
+        type: toast.TYPE.SUCCESS,
+        autoClose: 1500,
+        className: "rotateY"
+      });
+    } else {
+      toast.update(pubMsgToastId, {
+        render: "Cannot publish a message. Connect to your MQTT broker first!",
+        type: toast.TYPE.ERROR,
+        autoClose: 3000,
+        className: "rotateX animared"
+      });
+    }
   };
 
   render() {
