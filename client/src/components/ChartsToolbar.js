@@ -3,6 +3,11 @@ import PropTypes from "prop-types";
 import classNames from "classnames";
 
 export default function ChartsToolbar(props) {
+  // eslint-disable-next-line no-undef
+  $(function() {
+    // eslint-disable-next-line no-undef
+    $('[data-toggle="tooltip"]').tooltip();
+  });
   return (
     <div className="toolbar">
       <div className="btn-group-vertical">
@@ -14,10 +19,9 @@ export default function ChartsToolbar(props) {
         </button>
         <button
           className="btn btn-outline-primary"
-          // className={classNames("btn", {
-          //   "btn-outline-primary": props.pauseAllGraphsFlow,
-          //   "btn-outline-primary": !props.pauseAllGraphsFlow
-          // })}
+          data-toggle="tooltip"
+          data-placement="left"
+          title="Toggle data generation"
           onClick={props.onStartAllGraphFlowBtnClick}
         >
           <i
@@ -30,6 +34,9 @@ export default function ChartsToolbar(props) {
         <button
           type="button"
           className="btn btn-outline-primary"
+          data-toggle="tooltip"
+          data-placement="left"
+          title="Reset Graph Data"
           onClick={props.onCleanAllChartDataBtnClick}
         >
           <i className="fa fa-2x fa-trash" />
