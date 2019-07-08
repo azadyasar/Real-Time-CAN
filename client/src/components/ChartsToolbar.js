@@ -6,7 +6,7 @@ export default function ChartsToolbar(props) {
   // eslint-disable-next-line no-undef
   $(function() {
     // eslint-disable-next-line no-undef
-    $('[data-toggle="tooltip"]').tooltip();
+    $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
   });
   return (
     <div className="toolbar">
@@ -36,7 +36,7 @@ export default function ChartsToolbar(props) {
           className="btn btn-outline-primary"
           data-toggle="tooltip"
           data-placement="left"
-          title="Reset Graph Data"
+          title="Reset graph data"
           onClick={props.onCleanAllChartDataBtnClick}
         >
           <i className="fa fa-2x fa-trash" />
