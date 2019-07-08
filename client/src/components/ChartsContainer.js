@@ -1,10 +1,9 @@
 import React, { Component } from "react";
 import moment from "moment";
 import "../css/ChartsContainer.css";
-import PropTypes from "prop-types";
 
 import { connect } from "react-redux";
-import { updateLineData } from "../actions";
+import { updateChartData, changeGraphFlow } from "../actions";
 
 // Chart Cards
 import LineChart from "./Charts/LineChart";
@@ -18,118 +17,56 @@ function getRandomInt(min, max) {
 
 const mapStateToProps = state => {
   return {
-    lineData: state.chart.lineData
+    lineData: state.chart.lineData,
+    rpmData: state.chart.rpmData,
+    fuelData: state.chart.fuelData,
+    emissionsData: state.chart.emissionsData,
+    chartsDataFlowStatus: state.chart.chartsDataFlowStatus
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    updateLineData: newLineData => dispatch(updateLineData(newLineData))
+    updateChartData: newLineData => dispatch(updateChartData(newLineData)),
+    changeGraphFlow: signal => dispatch(changeGraphFlow(signal))
   };
 };
 
-export default class ChartsContainer extends Component {
+export class ConnectedChartsContainer extends Component {
   constructor(props) {
     super(props);
+    console.debug("ChartContainer constructer");
 
     this.dataLengthLimit = 15;
 
-    this.chartsDataFlowStatus = {
-      speedDataFlowPause: props.pauseAllGraphsFlow,
-      rpmDataFlowPause: props.pauseAllGraphsFlow,
-      fuelDataFlowPause: props.pauseAllGraphsFlow,
-      emissionDataFlowPause: props.pauseAllGraphsFlow
-    };
-    this.graphNameGeneratorMap = {
-      speedDataFlowPause: this.generateLineData,
-      rpmDataFlowPause: this.generateRPMLineData,
-      fuelDataFlowPause: this.generateFuelData,
-      emissionDataFlowPause: this.generateEmissionScatterData
-    };
-    this.state = {
-      chartsDataFlowStatus: {
-        speedDataFlowPause: props.pauseAllGraphsFlow,
-        rpmDataFlowPause: props.pauseAllGraphsFlow,
-        fuelDataFlowPause: props.pauseAllGraphsFlow,
-        emissionDataFlowPause: props.pauseAllGraphsFlow
+    this.graphGeneratorAttributes = {
+      speedLineData: {
+        generator: this.generateLineData,
+        pause: "speedDataFlowPause",
+        generatorInterval: null
       },
-      lineData: {
-        labels: [],
-        datasets: [
-          {
-            label: "Temperature",
-            borderCapStyle: "butt",
-            borderJoinStyle: "miter",
-            pointHitRadius: 10,
-            data: [],
-            fill: false, // Don't fill area under the line
-            borderColor: "green", // Line color
-            pointRadius: 5
-          },
-          {
-            label: "Humidity",
-            data: [],
-            fill: false,
-            borderColor: "red"
-          }
-        ]
+      rpmLineData: {
+        generator: this.generateRPMLineData,
+        pause: "rpmDataFlowPause",
+        generatorInterval: null
       },
-      rpmData: {
-        labels: [],
-        datasets: [
-          {
-            label: "RPM",
-            borderCapStyle: "butt",
-            borderJoinStyle: "miter",
-            pointHitRadius: 10,
-            data: [],
-            fill: false, // Don't fill area under the line
-            borderColor: "blue", // Line color
-            pointRadius: 5
-          }
-        ]
+      fuelDoughnutData: {
+        generator: this.generateFuelData,
+        pause: "fuelDataFlowPause",
+        generatorInterval: null
       },
-      fuelData: {
-        labels: ["Red", "Green", "Yellow", "Profit"],
-        datasets: [
-          {
-            data: this.getDoughnutData(),
-            backgroundColor: ["#CCC", "#36A2EB", "#FFCE56", "#8c0b63"],
-            hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#680849"]
-          }
-        ]
-      },
-      emissionScatterData: {
-        labels: ["CO2"],
-        datasets: [
-          {
-            label: "CO2 Emission",
-            fill: false,
-            backgroundColor: "rgba(75,192,192,0.4)",
-            pointBorderColor: "rgba(75,192,192,1)",
-            pointBackgroundColor: "#fff",
-            pointBorderWidth: 1,
-            pointHoverRadius: 5,
-            pointHoverBackgroundColor: "rgba(75,192,192,1)",
-            pointHoverBorderColor: "rgba(220,220,220,1)",
-            pointHoverBorderWidth: 5,
-            pointRadius: 5,
-            pointHitRadius: 10,
-            showLine: false,
-            data: function() {
-              let dataTmp = [];
-              for (let i = 0; i < this.dataLengthLimit; i++) {
-                dataTmp.push({
-                  x: getRandomInt(0, 50),
-                  y: getRandomInt(0, 50)
-                });
-              }
-              return dataTmp;
-            }.bind(this)()
-          }
-        ]
+      emissionsScatterData: {
+        generator: this.generateEmissionScatterData,
+        pause: "emissionDataFlowPause",
+        generatorInterval: null
       }
     };
+    this.graphGenerators = [
+      this.generateLineData,
+      this.generateRPMLineData,
+      this.generateFuelData,
+      this.generateEmissionScatterData
+    ];
 
     this.lineGraphOptions = {
       responsive: true,
@@ -167,14 +104,15 @@ export default class ChartsContainer extends Component {
   }
 
   generateLineData = () => {
-    if (this.chartsDataFlowStatus.speedDataFlowPause) return;
-    let tempDataCopy = this.state.lineData.datasets[0].data.concat(
+    console.debug("generateLineData");
+    if (this.props.chartsDataFlowStatus.speedDataFlowPause) return;
+    let tempDataCopy = this.props.lineData.datasets[0].data.concat(
       10 + Math.random() * 10
     );
-    let humDataCopy = this.state.lineData.datasets[1].data.concat(
+    let humDataCopy = this.props.lineData.datasets[1].data.concat(
       10 + Math.random() * 10
     );
-    let labelsCopy = this.state.lineData.labels.concat(moment().format());
+    let labelsCopy = this.props.lineData.labels.concat(moment().format());
 
     if (tempDataCopy.length > this.dataLengthLimit)
       tempDataCopy = tempDataCopy.slice(
@@ -192,20 +130,22 @@ export default class ChartsContainer extends Component {
         labelsCopy.length
       );
 
-    const lineDataCopy = Object.assign({}, this.state.lineData);
+    const lineDataCopy = Object.assign({}, this.props.lineData);
     lineDataCopy.labels = labelsCopy;
     lineDataCopy.datasets[0].data = tempDataCopy;
     lineDataCopy.datasets[1].data = humDataCopy;
-    this.setState({ lineData: lineDataCopy });
-    setTimeout(this.generateLineData, Math.random() * 3 * 1000);
+    // this.setState({ lineData: lineDataCopy });
+    this.props.updateChartData({ data: lineDataCopy, chartName: "lineData" });
+    // setTimeout(this.generateLineData, Math.random() * 3 * 1000);
   };
 
   generateRPMLineData = () => {
-    if (this.chartsDataFlowStatus.rpmDataFlowPause) return;
-    let rpmDataDatasetCopy = this.state.rpmData.datasets[0].data.concat(
+    console.debug("generateRPMLineData");
+    if (this.props.chartsDataFlowStatus.rpmDataFlowPause) return;
+    let rpmDataDatasetCopy = this.props.rpmData.datasets[0].data.concat(
       10 + Math.random() * 10
     );
-    let rmpDataLabelsCopy = this.state.rpmData.labels.concat(moment().format());
+    let rmpDataLabelsCopy = this.props.rpmData.labels.concat(moment().format());
 
     if (rpmDataDatasetCopy.length > this.dataLengthLimit)
       rpmDataDatasetCopy = rpmDataDatasetCopy.slice(
@@ -219,61 +159,74 @@ export default class ChartsContainer extends Component {
         rmpDataLabelsCopy.length
       );
 
-    const rpmDataCopy = Object.assign({}, this.state.rpmData);
+    const rpmDataCopy = Object.assign({}, this.props.rpmData);
     rpmDataCopy.labels = rmpDataLabelsCopy;
     rpmDataCopy.datasets[0].data = rpmDataDatasetCopy;
-    this.setState({ rpmData: rpmDataCopy });
-    setTimeout(this.generateRPMLineData, Math.random() * 4 * 1000);
+    this.props.updateChartData({ data: rpmDataCopy, chartName: "rpmData" });
+    // this.setState({ rpmData: rpmDataCopy });
+    // setTimeout(this.generateRPMLineData, Math.random() * 4 * 1000);
   };
 
   generateFuelData = () => {
-    if (this.chartsDataFlowStatus.fuelDataFlowPause) return;
-    const fuelDataCopy = Object.assign({}, this.state.fuelData);
+    console.debug("generateFuelData");
+    if (this.props.chartsDataFlowStatus.fuelDataFlowPause) return;
+    const fuelDataCopy = Object.assign({}, this.props.fuelData);
     fuelDataCopy.datasets[0].data = this.getDoughnutData();
-    this.setState({ fuelData: fuelDataCopy });
-    setTimeout(this.generateFuelData, Math.random() * 2.5 * 1000);
+    this.props.updateChartData({ data: fuelDataCopy, chartName: "fuelData" });
+    // this.setState({ fuelData: fuelDataCopy });
+    // setTimeout(this.generateFuelData, Math.random() * 2.5 * 1000);
   };
 
   generateEmissionScatterData = () => {
-    if (this.chartsDataFlowStatus.emissionDataFlowPause) return;
-    const emissionScatterDataCopy = Object.assign(
-      {},
-      this.state.emissionScatterData
-    );
+    console.debug("generateEmissionScatterData");
+    if (this.props.chartsDataFlowStatus.emissionDataFlowPause) return;
+    const emissionScatterDataCopy = Object.assign({}, this.props.emissionsData);
     emissionScatterDataCopy.datasets[0].data = this.getScatterDataSet();
-    this.setState({ emissionScatterData: emissionScatterDataCopy });
-    setTimeout(this.generateEmissionScatterData, Math.random() * 6 * 1000);
+    this.props.updateChartData({
+      data: emissionScatterDataCopy,
+      chartName: "emissionsData"
+    });
+    // this.setState({ emissionScatterData: emissionScatterDataCopy });
+    // setTimeout(this.generateEmissionScatterData, Math.random() * 6 * 1000);
   };
 
   componentDidMount() {
-    Object.keys(this.graphNameGeneratorMap).forEach(key => {
-      this.graphNameGeneratorMap[key]();
+    console.debug("ChartContainer did mount");
+    /* if (this.props.chartsDataFlowStatus.speedDataFlowPause) {
+      if (this.dataGenIntervals.generateLineDataInterval) {
+        clearInterval(this.dataGenIntervals.generateLineDataInterval);
+        this.dataGenIntervals.generateLineDataInterval = null;
+      }
+    } else if (!this.dataGenIntervals.generateLineDataInterval) {
+      console.debug("Starting line data generation");
+      this.dataGenIntervals.generateLineDataInterval = setInterval(
+        this.generateLineData,
+        Math.random() * 5 * 1000
+      );
+    } */
+    Object.keys(this.graphGeneratorAttributes).forEach(key => {
+      this.shouldGenerateData(this.graphGeneratorAttributes[key]);
     });
+    // this.graphGenerators.forEach(generator => generator());
   }
 
-  componentWillReceiveProps(props) {
-    console.log("Charts container will receive props: ", props);
-    Object.keys(this.chartsDataFlowStatus).forEach(key => {
-      this.chartsDataFlowStatus[key] = props.pauseAllGraphsFlow;
+  componentWillReceiveProps(newProps) {
+    console.log("Charts container will receive props: ", newProps);
+    Object.keys(this.graphGeneratorAttributes).forEach(key => {
+      this.shouldGenerateData(this.graphGeneratorAttributes[key], newProps);
     });
-
-    Object.keys(this.graphNameGeneratorMap).forEach(key => {
-      this.graphNameGeneratorMap[key]();
-    });
-
-    this.setState({
-      chartsDataFlowStatus: Object.assign({}, this.chartsDataFlowStatus, {
-        speedDataFlowPause: props.pauseAllGraphsFlow,
-        rpmDataFlowPause: props.pauseAllGraphsFlow,
-        fuelDataFlowPause: props.pauseAllGraphsFlow,
-        emissionDataFlowPause: props.pauseAllGraphsFlow
-      })
-    });
+    // this.graphGenerators.forEach(generator => generator());
   }
 
   componentWillUnmount() {
-    Object.keys(this.chartsDataFlowStatus).forEach(key => {
-      this.chartsDataFlowStatus[key] = true;
+    // Object.keys(this.chartsDataFlowStatus).forEach(key => {
+    //   this.chartsDataFlowStatus[key] = true;
+    // });
+    Object.keys(this.graphGeneratorAttributes).forEach(key => {
+      if (this.graphGeneratorAttributes[key].generatorInterval) {
+        clearInterval(this.graphGeneratorAttributes[key].generatorInterval);
+        this.graphGeneratorAttributes[key].generatorInterval = null;
+      }
     });
   }
 
@@ -323,20 +276,7 @@ export default class ChartsContainer extends Component {
     console.log(event.target);
     event.preventDefault();
 
-    this.chartsDataFlowStatus[event.target.name] = !this.chartsDataFlowStatus[
-      event.target.name
-    ];
-    this.graphNameGeneratorMap[event.target.name]();
-    this.setState({
-      chartsDataFlowStatus: Object.assign({}, this.state.chartsDataFlowStatus, {
-        [event.target.name]: !this.state.chartsDataFlowStatus[event.target.name]
-      })
-    });
-  };
-
-  onStartAllGraphFlowBtnClick = event => {
-    event.preventDefault();
-    this.setState({ pauseAllGraphsFlow: !this.state.pauseAllGraphsFlow });
+    this.props.changeGraphFlow({ chartName: event.target.name });
   };
 
   render() {
@@ -348,10 +288,10 @@ export default class ChartsContainer extends Component {
             <LineChart
               title="Speed"
               graphName="speedDataFlowPause"
-              data={this.state.lineData}
+              data={this.props.lineData}
               options={this.lineGraphOptions}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
-              dataFlowPause={this.state.chartsDataFlowStatus.speedDataFlowPause}
+              dataFlowPause={this.props.chartsDataFlowStatus.speedDataFlowPause}
             />
           </div>
           {/* RPM Graph */}
@@ -359,10 +299,10 @@ export default class ChartsContainer extends Component {
             <LineChart
               title="RPM"
               graphName="rpmDataFlowPause"
-              data={this.state.rpmData}
+              data={this.props.rpmData}
               options={this.lineGraphOptions}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
-              dataFlowPause={this.state.chartsDataFlowStatus.rpmDataFlowPause}
+              dataFlowPause={this.props.chartsDataFlowStatus.rpmDataFlowPause}
             />
           </div>
           {/* </div>
@@ -372,10 +312,10 @@ export default class ChartsContainer extends Component {
             <DoughnutChart
               title="Fuel Usage"
               graphName="fuelDataFlowPause"
-              data={this.state.fuelData}
+              data={this.props.fuelData}
               options={this.lineGraphOptions}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
-              dataFlowPause={this.state.chartsDataFlowStatus.fuelDataFlowPause}
+              dataFlowPause={this.props.chartsDataFlowStatus.fuelDataFlowPause}
             />
           </div>
           {/* Scatter Chart (Emissions) */}
@@ -383,16 +323,48 @@ export default class ChartsContainer extends Component {
             <ScatterChart
               title="Emission"
               graphName="emissionDataFlowPause"
-              data={this.state.emissionScatterData}
+              data={this.props.emissionsData}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
               dataFlowPause={
-                this.state.chartsDataFlowStatus.emissionDataFlowPause
+                this.props.chartsDataFlowStatus.emissionDataFlowPause
               }
             />
           </div>
         </div>
       </div>
     );
+  }
+
+  shouldGenerateData(dataGeneratorAttribute, newProps = undefined) {
+    if (!newProps) newProps = this.props;
+    if (newProps.chartsDataFlowStatus[dataGeneratorAttribute.pause]) {
+      if (dataGeneratorAttribute.generatorInterval) {
+        clearInterval(dataGeneratorAttribute.generatorInterval);
+        dataGeneratorAttribute.generatorInterval = null;
+      }
+    } else if (!dataGeneratorAttribute.generatorInterval) {
+      console.debug(
+        "Starting data generation for: ",
+        dataGeneratorAttribute.pause
+      );
+      dataGeneratorAttribute.generatorInterval = setInterval(
+        dataGeneratorAttribute.generator,
+        (Math.random() + 1) * 2 * 1000
+      );
+    }
+
+    /*     if (this.props.chartsDataFlowStatus[dataClassName]) {
+      if (this.dataGenIntervals[dataClassName]) {
+        clearInterval(this.dataGenIntervals[dataClassName]);
+        this.dataGenIntervals[dataClassName] = null;
+      }
+    } else if (!this.dataGenIntervals[dataClassName]) {
+      console.debug("Starting data generation for: ", dataClassName);
+      this.dataGenIntervals[dataClassName] = setInterval(
+        this[dataClassName](),
+        Math.random() * 5 * 1000
+      );
+    } */
   }
 
   /**
@@ -424,10 +396,9 @@ export default class ChartsContainer extends Component {
   };
 }
 
-ChartsContainer.propTypes = {
-  pauseAllGraphsFlow: PropTypes.bool
-};
+const ChartsContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ConnectedChartsContainer);
 
-ChartsContainer.defaultProps = {
-  pauseAllGraphsFlow: true
-};
+export default ChartsContainer;

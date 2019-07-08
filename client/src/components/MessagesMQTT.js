@@ -4,7 +4,11 @@ import mqtt from "mqtt";
 import { toast } from "react-toastify";
 
 import { connect } from "react-redux";
-import { updateMqttConnection, mqttTextMessageReceived } from "../actions";
+import {
+  updateMqttConnection,
+  mqttTextMessageReceived,
+  subscribeToTopic
+} from "../actions";
 
 import MqttShutdownModal from "./Modals/MqttShutdownModal";
 import MqttBrokerDetailsModal from "./Modals/MqttBrokerDetailsModal";
@@ -17,7 +21,8 @@ const mapDispatchToProps = dispatch => {
     updateMqttConnection: newMqttClient =>
       dispatch(updateMqttConnection(newMqttClient)),
     mqttTextMessageReceived: newMqttTextMessage =>
-      dispatch(mqttTextMessageReceived(newMqttTextMessage))
+      dispatch(mqttTextMessageReceived(newMqttTextMessage)),
+    subscribeToTopic: topic => dispatch(subscribeToTopic(topic))
   };
 };
 
@@ -32,7 +37,8 @@ const mapStateToProps = state => {
           state.mqtt.mqttClient.disconnected
         )
       : false,
-    mqttReceivedTextMessages: state.mqtt.mqttReceivedTextMessages
+    mqttReceivedTextMessages: state.mqtt.mqttReceivedTextMessages,
+    subscribedTopics: state.mqtt.subscribedTopics
   };
 };
 
@@ -42,7 +48,6 @@ export class ConnectedMessagesMQTT extends Component {
     console.debug("MessagesMQTT constructor");
     this.state = {
       subscribeTopics: ["avl/+/message"],
-      mqttClientId: null,
       isConnecting: false
     };
 
@@ -328,10 +333,7 @@ export class ConnectedMessagesMQTT extends Component {
       this.mqttClient.subscribe(subTopicName);
     }
 
-    const subTopicsCopy = this.state.subscribeTopics.concat(subTopicName);
-    this.setState({
-      subscribeTopics: subTopicsCopy
-    });
+    this.props.subscribeToTopic(subTopicName);
 
     // REPLACE
     setTimeout(() => {
@@ -557,7 +559,7 @@ export class ConnectedMessagesMQTT extends Component {
   getSubscribedTopicsTxt = () => {
     let subTopicsTxt = "";
     // eslint-disable-next-line
-    this.state.subscribeTopics.map((subTopic, index) => {
+    this.props.subscribedTopics.map((subTopic, index) => {
       subTopicsTxt += `${index + 1} - ${subTopic}
       `;
     });

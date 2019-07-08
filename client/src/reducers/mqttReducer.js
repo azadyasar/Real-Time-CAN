@@ -1,11 +1,13 @@
 import {
   UPDATE_MQTT_CONNECTION,
-  MQTT_TEXT_MESSAGE_RECEIVED
+  MQTT_TEXT_MESSAGE_RECEIVED,
+  SUBSCRIBE_TO_TOPIC
 } from "../constants/action-types";
 
 const initialState = {
   mqttClient: null,
-  mqttReceivedTextMessages: []
+  mqttReceivedTextMessages: [],
+  subscribedTopics: ["avl/+/message"]
 };
 
 function mqttReducer(state = initialState, action) {
@@ -15,10 +17,14 @@ function mqttReducer(state = initialState, action) {
         mqttClient: action.payload
       });
     case MQTT_TEXT_MESSAGE_RECEIVED:
-      return Object.asssign({}, state, {
+      return Object.assign({}, state, {
         mqttReceivedTextMessages: state.mqttReceivedTextMessages.concat(
           action.payload
         )
+      });
+    case SUBSCRIBE_TO_TOPIC:
+      return Object.assign({}, state, {
+        subscribedTopics: state.subscribedTopics.concat(action.payload)
       });
     default:
       return state;

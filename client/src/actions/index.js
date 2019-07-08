@@ -2,9 +2,12 @@ import {
   UPDATE_MQTT_CONNECTION,
   MQTT_TEXT_MESSAGE_RECEIVED,
   CHANGE_ALL_GRAPH_FLOW,
-  UPDATE_LINE_DATA
+  UPDATE_CHART_DATA,
+  CHANGE_GRAPH_FLOW,
+  SUBSCRIBE_TO_TOPIC
 } from "../constants/action-types";
 
+// MQTT
 export function updateMqttConnection(payload) {
   return {
     type: UPDATE_MQTT_CONNECTION,
@@ -19,6 +22,15 @@ export function mqttTextMessageReceived(payload) {
   };
 }
 
+export function subscribeToTopic(payload) {
+  return {
+    type: SUBSCRIBE_TO_TOPIC,
+    payload
+  };
+}
+
+// CHARTS
+
 export function changeAllGraphFlow(payload) {
   return {
     type: CHANGE_ALL_GRAPH_FLOW,
@@ -26,9 +38,24 @@ export function changeAllGraphFlow(payload) {
   };
 }
 
-export function updateLineData(payload) {
+/**
+ *
+ * @param {Object} payload - Should include `chartName` and `data`
+ */
+export function updateChartData(payload) {
   return {
-    type: UPDATE_LINE_DATA,
+    type: UPDATE_CHART_DATA,
+    payload
+  };
+}
+
+/**
+ *
+ * @param {Object} payload - Should include `chartName`
+ */
+export function changeGraphFlow(payload) {
+  return {
+    type: CHANGE_GRAPH_FLOW,
     payload
   };
 }
