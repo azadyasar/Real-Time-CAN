@@ -11,15 +11,16 @@ export default class ScatterChart extends Component {
         <Scatter data={this.props.data} />
         <div className="card-body">
           <button
-            className={classNames("btn mt-2", {
-              "btn-primary": this.props.dataFlowPause,
-              "btn-secondary": !this.props.dataFlowPause
+            className={classNames("btn m-2", {
+              "btn-outline-primary": this.props.dataFlowPause,
+              "btn-outline-secondary": !this.props.dataFlowPause
             })}
             name={this.props.graphName}
             onClick={this.props.onGraphFlowBtnClick}
           >
             {this.getContinuePauseText(this.props.dataFlowPause)}
           </button>
+          <button className="btn m2-2 btn-outline-success">Hook</button>
         </div>
       </div>
     );

@@ -8,7 +8,7 @@ import { changeAllGraphFlow } from "./actions";
 import "./App.css";
 import "react-toastify/dist/ReactToastify.css";
 
-import Comp1 from "./components/Comp1";
+import Landing from "./components/Landing";
 import NavBar from "./components/NavBar";
 import ChartsContainer from "./components/ChartsContainer";
 import MessagesMQTT from "./components/MessagesMQTT";
@@ -40,7 +40,7 @@ export class ConnectedApp extends Component {
         <ToastContainer position="top-left" autoClose={5000} />
         <NavBar />
         <Switch>
-          <Route exact path="/" component={Comp1} />
+          <Route exact path="/" component={Landing} />
           <Route
             path="/real-time-stream"
             render={routeProps => (

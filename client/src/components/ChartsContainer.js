@@ -143,9 +143,7 @@ export class ConnectedChartsContainer extends Component {
     lineDataCopy.labels = labelsCopy;
     lineDataCopy.datasets[0].data = tempDataCopy;
     lineDataCopy.datasets[1].data = humDataCopy;
-    // this.setState({ lineData: lineDataCopy });
     this.props.updateChartData({ data: lineDataCopy, chartName: "lineData" });
-    // setTimeout(this.generateLineData, Math.random() * 3 * 1000);
   };
 
   generateRPMLineData = () => {
@@ -172,8 +170,6 @@ export class ConnectedChartsContainer extends Component {
     rpmDataCopy.labels = rmpDataLabelsCopy;
     rpmDataCopy.datasets[0].data = rpmDataDatasetCopy;
     this.props.updateChartData({ data: rpmDataCopy, chartName: "rpmData" });
-    // this.setState({ rpmData: rpmDataCopy });
-    // setTimeout(this.generateRPMLineData, Math.random() * 4 * 1000);
   };
 
   generateFuelData = () => {
@@ -182,8 +178,6 @@ export class ConnectedChartsContainer extends Component {
     const fuelDataCopy = Object.assign({}, this.props.fuelData);
     fuelDataCopy.datasets[0].data = this.getDoughnutData();
     this.props.updateChartData({ data: fuelDataCopy, chartName: "fuelData" });
-    // this.setState({ fuelData: fuelDataCopy });
-    // setTimeout(this.generateFuelData, Math.random() * 2.5 * 1000);
   };
 
   generateEmissionScatterData = () => {
@@ -195,28 +189,13 @@ export class ConnectedChartsContainer extends Component {
       data: emissionScatterDataCopy,
       chartName: "emissionsData"
     });
-    // this.setState({ emissionScatterData: emissionScatterDataCopy });
-    // setTimeout(this.generateEmissionScatterData, Math.random() * 6 * 1000);
   };
 
   componentDidMount() {
     console.debug("ChartContainer did mount");
-    /* if (this.props.chartsDataFlowStatus.speedDataFlowPause) {
-      if (this.dataGenIntervals.generateLineDataInterval) {
-        clearInterval(this.dataGenIntervals.generateLineDataInterval);
-        this.dataGenIntervals.generateLineDataInterval = null;
-      }
-    } else if (!this.dataGenIntervals.generateLineDataInterval) {
-      console.debug("Starting line data generation");
-      this.dataGenIntervals.generateLineDataInterval = setInterval(
-        this.generateLineData,
-        Math.random() * 5 * 1000
-      );
-    } */
     Object.keys(this.graphGeneratorAttributes).forEach(key => {
       this.shouldGenerateData(this.graphGeneratorAttributes[key]);
     });
-    // this.graphGenerators.forEach(generator => generator());
   }
 
   componentWillReceiveProps(newProps) {
@@ -224,13 +203,9 @@ export class ConnectedChartsContainer extends Component {
     Object.keys(this.graphGeneratorAttributes).forEach(key => {
       this.shouldGenerateData(this.graphGeneratorAttributes[key], newProps);
     });
-    // this.graphGenerators.forEach(generator => generator());
   }
 
   componentWillUnmount() {
-    // Object.keys(this.chartsDataFlowStatus).forEach(key => {
-    //   this.chartsDataFlowStatus[key] = true;
-    // });
     Object.keys(this.graphGeneratorAttributes).forEach(key => {
       if (this.graphGeneratorAttributes[key].generatorInterval) {
         clearInterval(this.graphGeneratorAttributes[key].generatorInterval);
@@ -238,48 +213,6 @@ export class ConnectedChartsContainer extends Component {
       }
     });
   }
-
-  /*  onLineGraphBtnClick = event => {
-    event.preventDefault();
-
-    this.chartsDataFlowStatus.speedDataFlowPause = !this.chartsDataFlowStatus
-      .speedDataFlowPause;
-    this.generateLineData();
-
-    this.setState({
-      chartsDataFlowStatus: Object.assign({}, this.state.chartsDataFlowStatus, {
-        speedDataFlowPause: !this.state.chartsDataFlowStatus.speedDataFlowPause
-      })
-    });
-  };
-
-  onRPMGraphBtnClick = event => {
-    event.preventDefault();
-
-    this.chartsDataFlowStatus.rpmDataFlowPause = !this.chartsDataFlowStatus
-      .rpmDataFlowPause;
-    this.generateRPMLineData();
-
-    this.setState({
-      chartsDataFlowStatus: Object.assign({}, this.state.chartsDataFlowStatus, {
-        rpmDataFlowPause: !this.state.chartsDataFlowStatus.rpmDataFlowPause
-      })
-    });
-  };
-
-  onFuelGraphBtnClick = event => {
-    event.preventDefault();
-
-    this.chartsDataFlowStatus.fuelDataFlowPause = !this.chartsDataFlowStatus
-      .fuelDataFlowPause;
-    this.generateFuelData();
-
-    this.setState({
-      chartsDataFlowStatus: Object.assign({}, this.state.chartsDataFlowStatus, {
-        fuelDataFlowPause: !this.state.chartsDataFlowStatus.fuelDataFlowPause
-      })
-    });
-  }; */
 
   onGraphFlowBtnClick = event => {
     console.log(event.target);
@@ -329,8 +262,6 @@ export class ConnectedChartsContainer extends Component {
               dataFlowPause={this.props.chartsDataFlowStatus.rpmDataFlowPause}
             />
           </div>
-          {/* </div>
-        <div className="row justify-content-center"> */}
           {/* Doughnut Chart */}
           <div className="col-xl-4 col-lg-6 col-md-6 m-4 h-100" align="center">
             <DoughnutChart
@@ -376,19 +307,6 @@ export class ConnectedChartsContainer extends Component {
         (Math.random() + 1) * 2 * 1000
       );
     }
-
-    /*     if (this.props.chartsDataFlowStatus[dataClassName]) {
-      if (this.dataGenIntervals[dataClassName]) {
-        clearInterval(this.dataGenIntervals[dataClassName]);
-        this.dataGenIntervals[dataClassName] = null;
-      }
-    } else if (!this.dataGenIntervals[dataClassName]) {
-      console.debug("Starting data generation for: ", dataClassName);
-      this.dataGenIntervals[dataClassName] = setInterval(
-        this[dataClassName](),
-        Math.random() * 5 * 1000
-      );
-    } */
   }
 
   /**
