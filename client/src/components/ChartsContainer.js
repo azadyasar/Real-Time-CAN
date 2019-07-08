@@ -3,8 +3,14 @@ import moment from "moment";
 import "../css/ChartsContainer.css";
 
 import { connect } from "react-redux";
-import { updateChartData, changeGraphFlow } from "../actions";
+import {
+  updateChartData,
+  changeGraphFlow,
+  changeAllGraphFlow,
+  resetAllChartData
+} from "../actions";
 
+import ChartsToolbar from "./ChartsToolbar";
 // Chart Cards
 import LineChart from "./Charts/LineChart";
 import DoughnutChart from "./Charts/DoughnutChart";
@@ -21,14 +27,17 @@ const mapStateToProps = state => {
     rpmData: state.chart.rpmData,
     fuelData: state.chart.fuelData,
     emissionsData: state.chart.emissionsData,
-    chartsDataFlowStatus: state.chart.chartsDataFlowStatus
+    chartsDataFlowStatus: state.chart.chartsDataFlowStatus,
+    isAllGraphFlowPaused: state.chart.isAllGraphFlowPaused
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
     updateChartData: newLineData => dispatch(updateChartData(newLineData)),
-    changeGraphFlow: signal => dispatch(changeGraphFlow(signal))
+    changeGraphFlow: signal => dispatch(changeGraphFlow(signal)),
+    changeAllGraphFlow: signal => dispatch(changeAllGraphFlow(signal)),
+    resetAllChartData: signal => dispatch(resetAllChartData(signal))
   };
 };
 
@@ -279,9 +288,24 @@ export class ConnectedChartsContainer extends Component {
     this.props.changeGraphFlow({ chartName: event.target.name });
   };
 
+  onStartAllGraphFlowBtnClick = event => {
+    event.preventDefault();
+    this.props.changeAllGraphFlow(null);
+  };
+
+  onCleanAllChartDataBtnClick = event => {
+    event.preventDefault();
+    this.props.resetAllChartData(null);
+  };
+
   render() {
     return (
       <div className="charts-container ">
+        <ChartsToolbar
+          pauseAllGraphsFlow={this.props.isAllGraphFlowPaused}
+          onStartAllGraphFlowBtnClick={this.onStartAllGraphFlowBtnClick}
+          onCleanAllChartDataBtnClick={this.onCleanAllChartDataBtnClick}
+        />
         <div className="row  justify-content-center">
           {/* Speed Graph */}
           <div className="col-xl-4 col-lg-6 col-md-6 m-4 h-100" align="center">

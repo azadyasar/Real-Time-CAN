@@ -1,7 +1,8 @@
 import {
   UPDATE_CHART_DATA,
   CHANGE_ALL_GRAPH_FLOW,
-  CHANGE_GRAPH_FLOW
+  CHANGE_GRAPH_FLOW,
+  RESET_ALL_CHART_DATA
 } from "../constants/action-types";
 
 const initialLineData = {
@@ -46,7 +47,7 @@ const initialFuelDoughnutData = {
   labels: ["Red", "Green", "Yellow", "Profit"],
   datasets: [
     {
-      data: [10, 20, 30, 40],
+      data: [],
       backgroundColor: ["#CCC", "#36A2EB", "#FFCE56", "#8c0b63"],
       hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#680849"]
     }
@@ -114,7 +115,6 @@ function chartReducer(state = initialChartState, action) {
         [action.payload.chartName]: action.payload.data
       });
     case CHANGE_GRAPH_FLOW:
-      console.log(action);
       return Object.assign({}, state, {
         chartsDataFlowStatus: {
           ...state.chartsDataFlowStatus,
@@ -122,6 +122,13 @@ function chartReducer(state = initialChartState, action) {
             action.payload.chartName
           ]
         }
+      });
+    case RESET_ALL_CHART_DATA:
+      return Object.assign({}, state, {
+        lineData: initialLineData,
+        fuelData: initialFuelDoughnutData,
+        rpmData: initialRpmLineData,
+        emissionsData: initialEmissionScatterData
       });
     default:
       return state;

@@ -12,7 +12,6 @@ import Comp1 from "./components/Comp1";
 import NavBar from "./components/NavBar";
 import ChartsContainer from "./components/ChartsContainer";
 import MessagesMQTT from "./components/MessagesMQTT";
-import ChartsToolbar from "./components/ChartsToolbar";
 
 const mapStateToProps = state => {
   console.debug("App mapStateToProps state: ", state);
@@ -49,10 +48,6 @@ export class ConnectedApp extends Component {
                 <ChartsContainer
                   {...routeProps}
                   pauseAllGraphsFlow={this.props.isAllGraphFlowPaused}
-                />
-                <ChartsToolbar
-                  pauseAllGraphsFlow={this.props.isAllGraphFlowPaused}
-                  onStartAllGraphFlowBtnClick={this.onStartAllGraphFlowBtnClick}
                 />
               </React.Fragment>
             )}
