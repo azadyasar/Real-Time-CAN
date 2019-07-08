@@ -17,8 +17,8 @@ import ChartsToolbar from "./components/ChartsToolbar";
 const mapStateToProps = state => {
   console.debug("App mapStateToProps state: ", state);
   return {
-    mqttClient: state.mqttClient,
-    isAllGraphFlowPaused: state.isAllGraphFlowPaused
+    mqttClient: state.mqtt.mqttClient,
+    isAllGraphFlowPaused: state.chart.isAllGraphFlowPaused
   };
 };
 

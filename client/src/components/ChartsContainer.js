@@ -18,7 +18,7 @@ function getRandomInt(min, max) {
 
 const mapStateToProps = state => {
   return {
-    lineData: state.lineData
+    lineData: state.chart.lineData
   };
 };
 

@@ -1,4 +1,15 @@
-import {
+import { combineReducers } from "redux";
+import mqttReducer from "./mqttReducer";
+import chartReducer from "./chartReducer";
+
+const rootReducer = combineReducers({
+  mqtt: mqttReducer,
+  chart: chartReducer
+});
+
+export default rootReducer;
+
+/* import {
   UPDATE_MQTT_CONNECTION,
   MQTT_TEXT_MESSAGE_RECEIVED,
   CHANGE_ALL_GRAPH_FLOW,
@@ -60,7 +71,7 @@ function rootReducer(state = initialState, action) {
   }
 }
 
-export default rootReducer;
+export default rootReducer; */
 
 /* import { combineReducers } from "redux";
 import anotherReducer from "./anotherReducer";

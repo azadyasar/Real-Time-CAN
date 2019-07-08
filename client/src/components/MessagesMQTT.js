@@ -24,12 +24,15 @@ const mapDispatchToProps = dispatch => {
 const mapStateToProps = state => {
   console.debug("MessagesMQTT mapStateToProps state: ", state);
   return {
-    mqttClient: state.mqttClient,
-    isConnected: state.mqttClient
-      ? state.mqttClient.connected &&
-        !(state.mqttClient.disconnecting || state.mqttClient.disconnected)
+    mqttClient: state.mqtt.mqttClient,
+    isConnected: state.mqtt.mqttClient
+      ? state.mqtt.mqttClient.connected &&
+        !(
+          state.mqtt.mqttClient.disconnecting ||
+          state.mqtt.mqttClient.disconnected
+        )
       : false,
-    mqttReceivedTextMessages: state.mqttReceivedTextMessages
+    mqttReceivedTextMessages: state.mqtt.mqttReceivedTextMessages
   };
 };
 
@@ -84,6 +87,7 @@ export class ConnectedMessagesMQTT extends Component {
         this.checkIfMqttConnected,
         this.MQTT_CONNECT_TIMEOUT
       );
+    } else {
     }
     // eslint-disable-next-line no-undef
     $("[data-toggle=popover]").popover({
@@ -120,20 +124,10 @@ export class ConnectedMessagesMQTT extends Component {
       );
   }
 
-  componentWillUpdate(props) {
-    console.debug("MessagesMQTT will update. Props: ", props);
-  }
-
   componentWillUnmount() {
     console.debug("MessagesMQTT will unmount");
-    if (this.mqttConnectingBlinkInterval) {
-      clearInterval(this.mqttConnectingBlinkInterval);
-      this.mqttConnectingBlinkInterval = null;
-    }
-    if (this.checkIfMqttConnectedTimeout) {
-      clearTimeout(this.checkIfMqttConnectedTimeout);
-      this.checkIfMqttConnectedTimeout = null;
-    }
+    this.stopMqttBlink();
+    this.cancelMqttConnectionChecker();
   }
 
   connectToMqttBroker = targetMqttBrokerInfo => {
@@ -208,14 +202,8 @@ export class ConnectedMessagesMQTT extends Component {
 
   mqttOnConnect = () => {
     toast.success("Connected");
-    if (this.mqttConnectingBlinkInterval) {
-      clearInterval(this.mqttConnectingBlinkInterval);
-      this.mqttConnectingBlinkInterval = null;
-    }
-    if (this.checkIfMqttConnectedTimeout) {
-      clearTimeout(this.checkIfMqttConnectedTimeout);
-      this.checkIfMqttConnectedTimeout = null;
-    }
+    this.stopMqttBlink();
+    this.cancelMqttConnectionChecker();
     this.setState({
       isConnecting: false
     });
@@ -248,14 +236,8 @@ export class ConnectedMessagesMQTT extends Component {
         autoClose: 7500
       }
     );
-    if (this.checkIfMqttConnectedTimeout) {
-      clearTimeout(this.checkIfMqttConnectedTimeout);
-      this.checkIfMqttConnectedTimeout = null;
-    }
-    if (this.mqttConnectingBlinkInterval) {
-      clearInterval(this.mqttConnectingBlinkInterval);
-      this.mqttConnectingBlinkInterval = null;
-    }
+    this.cancelMqttConnectionChecker();
+    this.stopMqttBlink();
     if (this.mqttClient) this.mqttClient.end();
     else this.props.updateMqttConnection(null);
     // this.props.updateMqttConnection(this.mqttClient);
@@ -279,12 +261,19 @@ export class ConnectedMessagesMQTT extends Component {
 
   mqttOnOffline = () => {
     console.debug("mqttOnOffline");
-    toast.warn("Make sure that you have internet access");
+    toast.warn(
+      "Make sure that you have internet access or that you are not behind a firewall.",
+      {
+        autoClose: 6000
+      }
+    );
   };
 
   mqttOnEnd = () => {
     // toast.info("MQTT Connection Ended");
     console.debug("mqttOnEnd");
+    this.stopMqttBlink();
+    this.cancelMqttConnectionChecker();
     this.props.updateMqttConnection(this.mqttClient);
   };
 
@@ -310,16 +299,8 @@ export class ConnectedMessagesMQTT extends Component {
   onShutdownMQTTConnectionBtnClick = event => {
     event.preventDefault();
 
-    if (this.mqttConnectingBlinkInterval) {
-      console.debug("Clearing blinkInterval");
-      clearInterval(this.mqttConnectingBlinkInterval);
-      this.mqttConnectingBlinkInterval = null;
-    }
-    if (this.checkIfMqttConnectedTimeout) {
-      console.debug("Clearing checkIfTimeout");
-      clearTimeout(this.checkIfMqttConnectedTimeout);
-      this.checkIfMqttConnectedTimeout = null;
-    }
+    this.stopMqttBlink();
+    this.cancelMqttConnectionChecker();
 
     this.setState({
       isConnecting: false
@@ -541,10 +522,7 @@ export class ConnectedMessagesMQTT extends Component {
     const { hostname, port } = options || {};
 
     if (!this.mqttClient || !isConnected) {
-      if (this.mqttConnectingBlinkInterval) {
-        clearInterval(this.mqttConnectingBlinkInterval);
-        this.mqttConnectingBlinkInterval = null;
-      }
+      this.stopMqttBlink();
       let errorToastText;
       if (hostname)
         errorToastText =
@@ -595,6 +573,20 @@ export class ConnectedMessagesMQTT extends Component {
       );
     });
   };
+
+  stopMqttBlink() {
+    if (this.mqttConnectingBlinkInterval) {
+      clearInterval(this.mqttConnectingBlinkInterval);
+      this.mqttConnectingBlinkInterval = null;
+    }
+  }
+
+  cancelMqttConnectionChecker() {
+    if (this.checkIfMqttConnectedTimeout) {
+      clearTimeout(this.checkIfMqttConnectedTimeout);
+      this.checkIfMqttConnectedTimeout = null;
+    }
+  }
 }
 
 const MessagesMQTT = connect(
