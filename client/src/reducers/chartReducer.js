@@ -9,7 +9,7 @@ const initialLineData = {
   labels: [],
   datasets: [
     {
-      label: "Temperature",
+      label: "Vehicle - I",
       borderCapStyle: "butt",
       borderJoinStyle: "miter",
       pointHitRadius: 10,
@@ -19,7 +19,7 @@ const initialLineData = {
       pointRadius: 5
     },
     {
-      label: "Humidity",
+      label: "Vehicle - II",
       data: [],
       fill: false,
       borderColor: "red"

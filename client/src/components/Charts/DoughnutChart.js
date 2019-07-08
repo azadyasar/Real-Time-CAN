@@ -20,7 +20,13 @@ export default class DoughnutChart extends Component {
           >
             {this.getContinuePauseText(this.props.dataFlowPause)}
           </button>
-          <button className="btn m2-2 btn-outline-success">Hook</button>
+          <button
+            className="btn m2-2 btn-outline-success"
+            onClick={this.props.onHookBtnClick}
+            name={this.props.title}
+          >
+            Hook
+          </button>
         </div>
       </div>
     );
@@ -41,5 +47,6 @@ DoughnutChart.propTypes = {
   onGraphFlowBtnClick: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired,
   graphName: PropTypes.string.isRequired,
-  dataFlowPause: PropTypes.bool.isRequired
+  dataFlowPause: PropTypes.bool.isRequired,
+  onHookBtnClick: PropTypes.func.isRequired
 };

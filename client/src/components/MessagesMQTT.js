@@ -7,7 +7,8 @@ import { connect } from "react-redux";
 import {
   updateMqttConnection,
   mqttTextMessageReceived,
-  subscribeToTopic
+  subscribeToTopic,
+  setIsConnecting
 } from "../actions";
 
 import MqttShutdownModal from "./Modals/MqttShutdownModal";
@@ -22,7 +23,8 @@ const mapDispatchToProps = dispatch => {
       dispatch(updateMqttConnection(newMqttClient)),
     mqttTextMessageReceived: newMqttTextMessage =>
       dispatch(mqttTextMessageReceived(newMqttTextMessage)),
-    subscribeToTopic: topic => dispatch(subscribeToTopic(topic))
+    subscribeToTopic: topic => dispatch(subscribeToTopic(topic)),
+    setIsConnecting: signal => dispatch(setIsConnecting(signal))
   };
 };
 
@@ -37,6 +39,7 @@ const mapStateToProps = state => {
           state.mqtt.mqttClient.disconnected
         )
       : false,
+    isConnecting: state.mqtt.isConnecting,
     mqttReceivedTextMessages: state.mqtt.mqttReceivedTextMessages,
     subscribedTopics: state.mqtt.subscribedTopics
   };
@@ -67,23 +70,9 @@ export class ConnectedMessagesMQTT extends Component {
   }
 
   componentDidMount() {
-    console.debug(
-      "MessagesMQTT mounted state: ",
-      this.state,
-      ", props: ",
-      this.props
-    );
+    console.debug("MessagesMQTT mounted");
 
-    let isConnecting;
-    if (this.mqttClient)
-      isConnecting =
-        this.mqttClient.reconnecting !== undefined
-          ? this.mqttClient.reconnecting
-          : false;
-    else isConnecting = this.state.isConnecting;
-    console.debug("isConnecting: ", isConnecting);
-
-    if (isConnecting) {
+    if (this.props.isConnecting) {
       this.mqttConnectingBlinkInterval = setInterval(
         this.mqttConnectingBlink,
         this.MQTT_STATUS_BLINK_PERIOD
@@ -93,6 +82,8 @@ export class ConnectedMessagesMQTT extends Component {
         this.MQTT_CONNECT_TIMEOUT
       );
     } else {
+      this.stopMqttBlink();
+      this.cancelMqttConnectionChecker();
     }
     // eslint-disable-next-line no-undef
     $("[data-toggle=popover]").popover({
@@ -105,28 +96,23 @@ export class ConnectedMessagesMQTT extends Component {
     console.debug("MessagesMQTT received props: ", nextProps);
     this.mqttClient = nextProps.mqttClient;
 
-    let isConnecting;
-    if (!nextProps.mqttClient) isConnecting = false;
-    else
-      isConnecting =
-        (nextProps.mqttClient != null
-          ? nextProps.mqttClient.reconnecting
-          : false) || this.state.isConnecting;
-
-    console.debug("MessagesMQTT isConnecting: ", isConnecting);
-    if (nextProps.mqttClient && nextProps.mqttClient.connected)
-      this.setState({
-        isConnecting: false
-      });
-    else
-      this.setState({
-        isConnecting
-      });
-    if (!this.mqttConnectingBlinkInterval)
-      this.mqttConnectingBlinkInterval = setInterval(
-        this.mqttConnectingBlinkInterval,
-        this.MQTT_STATUS_BLINK_PERIOD
-      );
+    if (nextProps.isConnecting) {
+      if (!this.mqttConnectingBlinkInterval) {
+        this.mqttConnectingBlinkInterval = setInterval(
+          this.mqttConnectingBlinkInterval,
+          this.MQTT_STATUS_BLINK_PERIOD
+        );
+      }
+      if (!this.checkIfMqttConnectedTimeout) {
+        this.checkIfMqttConnectedTimeout = setInterval(
+          this.checkIfMqttConnected,
+          this.MQTT_CONNECT_TIMEOUT
+        );
+      }
+    } else {
+      this.stopMqttBlink();
+      this.cancelMqttConnectionChecker();
+    }
   }
 
   componentWillUnmount() {
@@ -186,10 +172,6 @@ export class ConnectedMessagesMQTT extends Component {
           targetMqttBrokerInfo.host +
           "."
       );
-      this.setState({
-        isConnected: false,
-        isConnecting: false
-      });
     }
 
     if (this.mqttClient) {
@@ -211,9 +193,8 @@ export class ConnectedMessagesMQTT extends Component {
     toast.success("Connected!");
     this.stopMqttBlink();
     this.cancelMqttConnectionChecker();
-    this.setState({
-      isConnecting: false
-    });
+
+    this.props.setIsConnecting({ isConnecting: false });
     console.log("Mqtt connected succesfully");
 
     if (this.mqttClient)
@@ -282,7 +263,7 @@ export class ConnectedMessagesMQTT extends Component {
     toast.info("MQTT connection is closed.");
     this.stopMqttBlink();
     this.cancelMqttConnectionChecker();
-    this.setState({ isConnecting: false });
+    this.props.setIsConnecting({ isConnecting: false });
     this.props.updateMqttConnection(this.mqttClient);
   };
 
@@ -300,6 +281,7 @@ export class ConnectedMessagesMQTT extends Component {
     this.connectToMqttBroker(targetMqttBrokerInfo);
 
     this.bottomToast("Connecting to the broker...");
+    this.props.setIsConnecting({ isConnecting: true });
     this.setState({
       isConnecting: true
     });
@@ -398,7 +380,7 @@ export class ConnectedMessagesMQTT extends Component {
         );
 
     let { isConnecting } = this.state;
-    isConnecting = isConnecting && !this.props.mqttClient.disconnecting;
+    // isConnecting = isConnecting && !this.props.mqttClient.disconnecting;
 
     console.debug(
       "MessagesMQTT render: state:",
@@ -538,14 +520,16 @@ export class ConnectedMessagesMQTT extends Component {
       else errorToastText = "MQTT Connection Timeout Error";
       toast.error(errorToastText);
       if (this.mqttClient) this.mqttClient.end();
-      else this.props.updateMqttConnection(null);
+      else {
+        this.props.updateMqttConnection(null);
+        this.props.setIsConnecting({ isConnecting: false });
+      }
     }
   };
 
   getMqttBrokerInfoTxt = () => {
-    let { connected: isConnected, reconnecting: isConnecting } =
-      this.mqttClient || {};
-    isConnecting = isConnecting && this.state.isConnecting;
+    let { connected: isConnected } = this.mqttClient || {};
+
     let options;
     if (this.mqttClient) options = this.mqttClient.options;
 
@@ -555,7 +539,7 @@ export class ConnectedMessagesMQTT extends Component {
       return (
         "Connected to " + hostname + ":" + port + " Client ID: " + clientId
       );
-    else if (this.mqttClient && isConnecting)
+    else if (this.mqttClient && this.props.isConnecting)
       return (
         "Connecting to " + hostname + ":" + port + " \nClient ID: " + clientId
       );
@@ -591,6 +575,7 @@ export class ConnectedMessagesMQTT extends Component {
 
   cancelMqttConnectionChecker() {
     if (this.checkIfMqttConnectedTimeout) {
+      console.debug("Cancelling connection checker");
       clearTimeout(this.checkIfMqttConnectedTimeout);
       this.checkIfMqttConnectedTimeout = null;
     }

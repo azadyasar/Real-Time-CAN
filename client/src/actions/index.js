@@ -5,7 +5,8 @@ import {
   UPDATE_CHART_DATA,
   CHANGE_GRAPH_FLOW,
   SUBSCRIBE_TO_TOPIC,
-  RESET_ALL_CHART_DATA
+  RESET_ALL_CHART_DATA,
+  SET_IS_CONNECTING
 } from "../constants/action-types";
 
 // MQTT
@@ -26,6 +27,13 @@ export function mqttTextMessageReceived(payload) {
 export function subscribeToTopic(payload) {
   return {
     type: SUBSCRIBE_TO_TOPIC,
+    payload
+  };
+}
+
+export function setIsConnecting(payload) {
+  return {
+    type: SET_IS_CONNECTING,
     payload
   };
 }

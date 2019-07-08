@@ -15,6 +15,7 @@ import ChartsToolbar from "./ChartsToolbar";
 import LineChart from "./Charts/LineChart";
 import DoughnutChart from "./Charts/DoughnutChart";
 import ScatterChart from "./Charts/ScatterChart";
+import { toast } from "react-toastify";
 
 // eslint-disable-next-line
 function getRandomInt(min, max) {
@@ -231,6 +232,11 @@ export class ConnectedChartsContainer extends Component {
     this.props.resetAllChartData(null);
   };
 
+  onHookChartDataBtnClick = event => {
+    event.preventDefault();
+    toast.info("Hooking " + event.target.name);
+  };
+
   render() {
     return (
       <div className="charts-container ">
@@ -249,6 +255,7 @@ export class ConnectedChartsContainer extends Component {
               options={this.lineGraphOptions}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
               dataFlowPause={this.props.chartsDataFlowStatus.speedDataFlowPause}
+              onHookBtnClick={this.onHookChartDataBtnClick}
             />
           </div>
           {/* RPM Graph */}
@@ -260,6 +267,7 @@ export class ConnectedChartsContainer extends Component {
               options={this.lineGraphOptions}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
               dataFlowPause={this.props.chartsDataFlowStatus.rpmDataFlowPause}
+              onHookBtnClick={this.onHookChartDataBtnClick}
             />
           </div>
           {/* Doughnut Chart */}
@@ -271,6 +279,7 @@ export class ConnectedChartsContainer extends Component {
               options={this.lineGraphOptions}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
               dataFlowPause={this.props.chartsDataFlowStatus.fuelDataFlowPause}
+              onHookBtnClick={this.onHookChartDataBtnClick}
             />
           </div>
           {/* Scatter Chart (Emissions) */}
@@ -283,6 +292,7 @@ export class ConnectedChartsContainer extends Component {
               dataFlowPause={
                 this.props.chartsDataFlowStatus.emissionDataFlowPause
               }
+              onHookBtnClick={this.onHookChartDataBtnClick}
             />
           </div>
         </div>
