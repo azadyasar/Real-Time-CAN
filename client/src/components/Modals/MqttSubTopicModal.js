@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import { toast } from "react-toastify";
 
 export default class MqttSubTopicModal extends Component {
   constructor(props) {
@@ -17,6 +18,14 @@ export default class MqttSubTopicModal extends Component {
 
   onSubscribeBtnClick = event => {
     event.preventDefault();
+    if (this.state.subTopicValue === "") {
+      toast.warn("You must fill in the topic value.");
+      return;
+    }
+
+    // eslint-disable-next-line no-undef
+    $(`#${this.props.modalId}`).modal("hide");
+
     this.props.onSubTopicSubmit(this.state.subTopicValue);
     this.setState({ subTopicValue: "" });
   };
@@ -87,7 +96,7 @@ export default class MqttSubTopicModal extends Component {
               <button
                 type="button"
                 className="btn btn-success"
-                data-dismiss="modal"
+                // data-dismiss="modal"
                 onClick={this.onSubscribeBtnClick}
               >
                 Subscribe
