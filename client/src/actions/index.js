@@ -6,7 +6,8 @@ import {
   CHANGE_GRAPH_FLOW,
   SUBSCRIBE_TO_TOPIC,
   RESET_ALL_CHART_DATA,
-  SET_IS_CONNECTING
+  SET_IS_CONNECTING,
+  ADD_OBSERVER
 } from "../constants/action-types";
 
 // MQTT
@@ -72,6 +73,18 @@ export function changeGraphFlow(payload) {
 export function resetAllChartData(payload) {
   return {
     type: RESET_ALL_CHART_DATA,
+    payload
+  };
+}
+
+/**
+ *
+ * @param {Object} payload - Should include `topicName` to subscribe to and `callback` function to call to
+ * upon message retrieval.
+ */
+export function addObserver(payload) {
+  return {
+    type: ADD_OBSERVER,
     payload
   };
 }

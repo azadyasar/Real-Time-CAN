@@ -41,7 +41,8 @@ const mapStateToProps = state => {
       : false,
     isConnecting: state.mqtt.isConnecting,
     mqttReceivedTextMessages: state.mqtt.mqttReceivedTextMessages,
-    subscribedTopics: state.mqtt.subscribedTopics
+    subscribedTopics: state.mqtt.subscribedTopics,
+    mqttObserverCallbacks: state.mqtt.mqttObserverCallbacks
   };
 };
 
@@ -201,7 +202,7 @@ export class ConnectedMessagesMQTT extends Component {
     console.log("Mqtt connected succesfully");
 
     if (this.mqttClient)
-      this.state.subscribeTopics.forEach(topic =>
+      this.props.subscribedTopics.forEach(topic =>
         this.mqttClient.subscribe(topic, console.log)
       );
     this.props.updateMqttConnection(this.mqttClient);
@@ -217,6 +218,11 @@ export class ConnectedMessagesMQTT extends Component {
       " Message: ",
       message.toString()
     );
+    console.log("this", this);
+    console.log(this.props.mqttObserverCallbacks);
+    if (this.props.mqttObserverCallbacks[topic]) {
+      this.props.mqttObserverCallbacks[topic].forEach(cb => cb(message));
+    }
     this.props.mqttTextMessageReceived({ topic, message });
   };
 

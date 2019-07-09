@@ -7,9 +7,11 @@ import {
   updateChartData,
   changeGraphFlow,
   changeAllGraphFlow,
-  resetAllChartData
+  resetAllChartData,
+  addObserver
 } from "../actions";
 
+import HookChartModal from "./Modals/HookChartModal";
 import ChartsToolbar from "./ChartsToolbar";
 // Chart Cards
 import LineChart from "./Charts/LineChart";
@@ -38,7 +40,8 @@ const mapDispatchToProps = dispatch => {
     updateChartData: newLineData => dispatch(updateChartData(newLineData)),
     changeGraphFlow: signal => dispatch(changeGraphFlow(signal)),
     changeAllGraphFlow: signal => dispatch(changeAllGraphFlow(signal)),
-    resetAllChartData: signal => dispatch(resetAllChartData(signal))
+    resetAllChartData: signal => dispatch(resetAllChartData(signal)),
+    addObserver: observerInfo => dispatch(addObserver(observerInfo))
   };
 };
 
@@ -48,6 +51,8 @@ export class ConnectedChartsContainer extends Component {
     console.debug("ChartContainer constructer");
 
     this.dataLengthLimit = 15;
+
+    this.currentObserverTopic = null;
 
     this.graphGeneratorAttributes = {
       speedLineData: {
@@ -233,9 +238,22 @@ export class ConnectedChartsContainer extends Component {
   };
 
   onHookChartDataBtnClick = event => {
-    event.preventDefault();
-    toast.info("Hooking " + event.target.name);
+    toast.info("Hooking " + event.graphTarget);
+    this.currentObserverTopic = event.graphTarget;
   };
+
+  onHookChartDataSubmit = topicName => {
+    toast.info("Subscribing to " + topicName);
+    this.props.addObserver({
+      topicName: topicName,
+      callback: this.mqttCb
+    });
+    this.currentObserverTopic = null;
+  };
+
+  mqttCb(msg) {
+    console.log("Observer received: " + msg.toString());
+  }
 
   render() {
     return (
@@ -245,17 +263,23 @@ export class ConnectedChartsContainer extends Component {
           onStartAllGraphFlowBtnClick={this.onStartAllGraphFlowBtnClick}
           onCleanAllChartDataBtnClick={this.onCleanAllChartDataBtnClick}
         />
+        <HookChartModal
+          modalId="hookChartModalId"
+          onApplyHookBtnSubmit={this.onHookChartDataSubmit}
+        />
         <div className="row  justify-content-center">
           {/* Speed Graph */}
           <div className="col-xl-4 col-lg-6 col-md-6 m-4 h-100" align="center">
             <LineChart
               title="Speed"
               graphName="speedDataFlowPause"
+              graphTarget="speedLineData"
               data={this.props.lineData}
               options={this.lineGraphOptions}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
               dataFlowPause={this.props.chartsDataFlowStatus.speedDataFlowPause}
               onHookBtnClick={this.onHookChartDataBtnClick}
+              target="hookChartModalId"
             />
           </div>
           {/* RPM Graph */}
@@ -263,11 +287,13 @@ export class ConnectedChartsContainer extends Component {
             <LineChart
               title="RPM"
               graphName="rpmDataFlowPause"
+              graphTarget="rpmLineData"
               data={this.props.rpmData}
               options={this.lineGraphOptions}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
               dataFlowPause={this.props.chartsDataFlowStatus.rpmDataFlowPause}
               onHookBtnClick={this.onHookChartDataBtnClick}
+              target="hookChartModalId"
             />
           </div>
           {/* Doughnut Chart */}
@@ -275,11 +301,13 @@ export class ConnectedChartsContainer extends Component {
             <DoughnutChart
               title="Fuel Usage"
               graphName="fuelDataFlowPause"
+              graphTarget="fuelData"
               data={this.props.fuelData}
               options={this.lineGraphOptions}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
               dataFlowPause={this.props.chartsDataFlowStatus.fuelDataFlowPause}
               onHookBtnClick={this.onHookChartDataBtnClick}
+              target="hookChartModalId"
             />
           </div>
           {/* Scatter Chart (Emissions) */}
@@ -287,12 +315,14 @@ export class ConnectedChartsContainer extends Component {
             <ScatterChart
               title="Emission"
               graphName="emissionDataFlowPause"
+              graphTarget="emissionsScatterData"
               data={this.props.emissionsData}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
               dataFlowPause={
                 this.props.chartsDataFlowStatus.emissionDataFlowPause
               }
               onHookBtnClick={this.onHookChartDataBtnClick}
+              target="hookChartModalId"
             />
           </div>
         </div>

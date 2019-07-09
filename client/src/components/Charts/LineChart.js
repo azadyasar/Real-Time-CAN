@@ -22,8 +22,14 @@ export default class LineChart extends Component {
           </button>
           <button
             className="btn m2-2 btn-outline-success"
-            onClick={this.props.onHookBtnClick}
             name={this.props.title}
+            data-toggle="modal"
+            data-target={`#${this.props.target}`}
+            onClick={e => {
+              e.preventDefault();
+              e.graphTarget = this.props.graphTarget;
+              this.props.onHookBtnClick(e);
+            }}
           >
             Hook
           </button>
@@ -47,5 +53,7 @@ LineChart.propTypes = {
   title: PropTypes.string.isRequired,
   graphName: PropTypes.string.isRequired,
   dataFlowPause: PropTypes.bool.isRequired,
-  onHookBtnClick: PropTypes.func.isRequired
+  target: PropTypes.string.isRequired,
+  onHookBtnClick: PropTypes.func.isRequired,
+  graphTarget: PropTypes.string.isRequired
 };
