@@ -51,7 +51,7 @@ export class ConnectedMessagesMQTT extends Component {
     super(props);
     console.debug("MessagesMQTT constructor");
     this.state = {
-      subscribeTopics: ["avl/+/message"],
+      mqttObserverCallbacks: props.mqttObserverCallbacks,
       isConnecting: false
     };
 
@@ -72,6 +72,10 @@ export class ConnectedMessagesMQTT extends Component {
 
   componentDidMount() {
     console.debug("MessagesMQTT mounted");
+
+    this.setState({
+      mqttObserverCallbacks: this.props.mqttObserverCallbacks
+    });
 
     if (this.props.isConnecting) {
       this.mqttConnectingBlinkInterval = setInterval(
@@ -97,6 +101,10 @@ export class ConnectedMessagesMQTT extends Component {
   componentWillReceiveProps(nextProps) {
     console.debug("MessagesMQTT received props: ", nextProps);
     this.mqttClient = nextProps.mqttClient;
+
+    this.setState({
+      mqttObserverCallbacks: nextProps.mqttObserverCallbacks
+    });
 
     if (nextProps.isConnecting) {
       if (!this.mqttConnectingBlinkInterval) {
@@ -154,8 +162,9 @@ export class ConnectedMessagesMQTT extends Component {
 
     console.log("Mqtt Options: ", mqttConnectionOptions);
 
+    let mqttClient;
     try {
-      this.mqttClient = mqtt.connect(
+      mqttClient = mqtt.connect(
         targetMqttBrokerInfo.host,
         mqttConnectionOptions
       );
@@ -178,19 +187,18 @@ export class ConnectedMessagesMQTT extends Component {
       );
     }
 
-    if (this.mqttClient) {
-      this.mqttClient.on("connect", this.mqttOnConnect);
-      this.mqttClient.on("message", this.mqttOnMessage);
-      this.mqttClient.on("packetsend", this.mqttOnPacketSend);
-      this.mqttClient.on("packetreceive", this.mqttOnPacketReceive);
-      this.mqttClient.on("aaa", this.mqttOnMessage);
-      this.mqttClient.on("error", this.mqttOnError);
-      this.mqttClient.on("disconnect", this.mqttOnDisconnect);
-      this.mqttClient.on("offline", this.mqttOnOffline);
-      this.mqttClient.on("end", this.mqttOnEnd);
-      this.mqttClient.on("close", this.mqttOnClose);
+    if (mqttClient) {
+      mqttClient.on("connect", this.mqttOnConnect);
+      mqttClient.on("message", this.mqttOnMessage);
+      mqttClient.on("packetsend", this.mqttOnPacketSend);
+      mqttClient.on("packetreceive", this.mqttOnPacketReceive);
+      mqttClient.on("error", this.mqttOnError);
+      mqttClient.on("disconnect", this.mqttOnDisconnect);
+      mqttClient.on("offline", this.mqttOnOffline);
+      mqttClient.on("end", this.mqttOnEnd);
+      mqttClient.on("close", this.mqttOnClose);
     }
-    this.props.updateMqttConnection(this.mqttClient);
+    this.props.updateMqttConnection(mqttClient);
   };
 
   mqttOnConnect = () => {
@@ -218,12 +226,9 @@ export class ConnectedMessagesMQTT extends Component {
       " Message: ",
       message.toString()
     );
-    console.log("this", this);
-    console.log(this.props.mqttObserverCallbacks);
-    if (this.props.mqttObserverCallbacks[topic]) {
-      this.props.mqttObserverCallbacks[topic].forEach(cb => cb(message));
-    }
+
     this.props.mqttTextMessageReceived({ topic, message });
+    this.props.distributeMqttMessage(topic, message);
   };
 
   mqttOnError = error => {
@@ -237,7 +242,6 @@ export class ConnectedMessagesMQTT extends Component {
     this.stopMqttBlink();
     if (this.mqttClient) this.mqttClient.end();
     else this.props.updateMqttConnection(null);
-    // this.props.updateMqttConnection(this.mqttClient);
     console.error("Mqtt connection failed with error: ", error);
   };
 
@@ -245,15 +249,11 @@ export class ConnectedMessagesMQTT extends Component {
     toast.error("Disconnected from the broker.");
     if (this.mqttClient) this.mqttClient.end();
     else this.props.updateMqttConnection(null);
-    // this.props.updateMqttConnection(this.mqttClient);
     console.log("Mqtt client disconnected.");
   };
 
   mqttOnClose = () => {
-    // toast.info("MQTT connection is closed.");
-    // if (this.mqttClient) this.mqttClient.end();
-    // else this.props.updateMqttConnection(null);
-    // console.debug("mqttOnClose");
+    console.debug("mqttOnClose");
   };
 
   mqttOnOffline = () => {

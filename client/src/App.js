@@ -17,7 +17,8 @@ const mapStateToProps = state => {
   console.debug("App mapStateToProps state: ", state);
   return {
     mqttClient: state.mqtt.mqttClient,
-    isAllGraphFlowPaused: state.chart.isAllGraphFlowPaused
+    isAllGraphFlowPaused: state.chart.isAllGraphFlowPaused,
+    mqttObserverCallbacks: state.mqtt.mqttObserverCallbacks
   };
 };
 
@@ -31,6 +32,14 @@ export class ConnectedApp extends Component {
   onStartAllGraphFlowBtnClick = event => {
     event.preventDefault();
     this.props.changeAllGraphFlow(null);
+  };
+
+  onMqttMessageReceived = (topic, message) => {
+    console.debug("App onMqttMessageReceived: ", topic + " " + message);
+    console.log(this.props);
+    if (this.props.mqttObserverCallbacks[topic]) {
+      this.props.mqttObserverCallbacks[topic].forEach(cb => cb(message));
+    }
   };
 
   render() {
@@ -54,7 +63,12 @@ export class ConnectedApp extends Component {
           />
           <Route
             path="/messages"
-            render={routeProps => <MessagesMQTT {...routeProps} />}
+            render={routeProps => (
+              <MessagesMQTT
+                {...routeProps}
+                distributeMqttMessage={this.onMqttMessageReceived}
+              />
+            )}
           />
         </Switch>
       </div>

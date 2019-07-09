@@ -8,7 +8,9 @@ import {
   changeGraphFlow,
   changeAllGraphFlow,
   resetAllChartData,
-  addObserver
+  addObserver,
+  setCallbackRegister,
+  subscribeToTopic
 } from "../actions";
 
 import HookChartModal from "./Modals/HookChartModal";
@@ -31,7 +33,8 @@ const mapStateToProps = state => {
     fuelData: state.chart.fuelData,
     emissionsData: state.chart.emissionsData,
     chartsDataFlowStatus: state.chart.chartsDataFlowStatus,
-    isAllGraphFlowPaused: state.chart.isAllGraphFlowPaused
+    isAllGraphFlowPaused: state.chart.isAllGraphFlowPaused,
+    callbackRegisterStatus: state.chart.callbackRegisterStatus
   };
 };
 
@@ -41,7 +44,10 @@ const mapDispatchToProps = dispatch => {
     changeGraphFlow: signal => dispatch(changeGraphFlow(signal)),
     changeAllGraphFlow: signal => dispatch(changeAllGraphFlow(signal)),
     resetAllChartData: signal => dispatch(resetAllChartData(signal)),
-    addObserver: observerInfo => dispatch(addObserver(observerInfo))
+    addObserver: observerInfo => dispatch(addObserver(observerInfo)),
+    setCallbackRegister: (chartName, status) =>
+      dispatch(setCallbackRegister({ chartName, status })),
+    subscribeToTopic: topic => dispatch(subscribeToTopic(topic))
   };
 };
 
@@ -62,6 +68,7 @@ export class ConnectedChartsContainer extends Component {
       },
       rpmLineData: {
         generator: this.generateRPMLineData,
+        callback: this.callbackRPMLineData,
         pause: "rpmDataFlowPause",
         generatorInterval: null
       },
@@ -76,12 +83,6 @@ export class ConnectedChartsContainer extends Component {
         generatorInterval: null
       }
     };
-    this.graphGenerators = [
-      this.generateLineData,
-      this.generateRPMLineData,
-      this.generateFuelData,
-      this.generateEmissionScatterData
-    ];
 
     this.lineGraphOptions = {
       responsive: true,
@@ -178,6 +179,39 @@ export class ConnectedChartsContainer extends Component {
     this.props.updateChartData({ data: rpmDataCopy, chartName: "rpmData" });
   };
 
+  callbackRPMLineData = message => {
+    console.debug("callbackRPMLineData");
+    if (this.props.chartsDataFlowStatus.rpmDataFlowPause) return;
+    const incomingValue = Number(message.toString());
+    if (!Number.isNaN(incomingValue)) {
+      let rpmDataDatasetCopy = this.props.rpmData.datasets[0].data.concat(
+        incomingValue
+      );
+      let rmpDataLabelsCopy = this.props.rpmData.labels.concat(
+        moment().format()
+      );
+      if (rpmDataDatasetCopy.length > this.dataLengthLimit)
+        rpmDataDatasetCopy = rpmDataDatasetCopy.slice(
+          rpmDataDatasetCopy.length - this.dataLengthLimit,
+          rpmDataDatasetCopy.length
+        );
+
+      if (rmpDataLabelsCopy.length > this.dataLengthLimit)
+        rmpDataLabelsCopy = rmpDataLabelsCopy.slice(
+          rmpDataLabelsCopy.length - this.dataLengthLimit,
+          rmpDataLabelsCopy.length
+        );
+      const rpmDataCopy = Object.assign({}, this.props.rpmData);
+      rpmDataCopy.labels = rmpDataLabelsCopy;
+      rpmDataCopy.datasets[0].data = rpmDataDatasetCopy;
+      this.props.updateChartData({ data: rpmDataCopy, chartName: "rpmData" });
+    } else {
+      toast.warn(
+        "Received message contains a non-numeric value: " + message.toString()
+      );
+    }
+  };
+
   generateFuelData = () => {
     console.debug("generateFuelData");
     if (this.props.chartsDataFlowStatus.fuelDataFlowPause) return;
@@ -200,14 +234,14 @@ export class ConnectedChartsContainer extends Component {
   componentDidMount() {
     console.debug("ChartContainer did mount");
     Object.keys(this.graphGeneratorAttributes).forEach(key => {
-      this.shouldGenerateData(this.graphGeneratorAttributes[key]);
+      this.shouldGenerateData(key);
     });
   }
 
   componentWillReceiveProps(newProps) {
     console.log("Charts container will receive props: ", newProps);
     Object.keys(this.graphGeneratorAttributes).forEach(key => {
-      this.shouldGenerateData(this.graphGeneratorAttributes[key], newProps);
+      this.shouldGenerateData(key, newProps);
     });
   }
 
@@ -239,16 +273,18 @@ export class ConnectedChartsContainer extends Component {
 
   onHookChartDataBtnClick = event => {
     toast.info("Hooking " + event.graphTarget);
-    this.currentObserverTopic = event.graphTarget;
+    this.observerChartName = event.graphTarget;
   };
 
   onHookChartDataSubmit = topicName => {
     toast.info("Subscribing to " + topicName);
     this.props.addObserver({
       topicName: topicName,
-      callback: this.mqttCb
+      callback: this.graphGeneratorAttributes[this.observerChartName].callback
     });
-    this.currentObserverTopic = null;
+    this.props.setCallbackRegister(this.observerChartName, true);
+    this.props.subscribeToTopic(topicName);
+    this.observerChartName = null;
   };
 
   mqttCb(msg) {
@@ -330,20 +366,23 @@ export class ConnectedChartsContainer extends Component {
     );
   }
 
-  shouldGenerateData(dataGeneratorAttribute, newProps = undefined) {
+  shouldGenerateData(key, newProps = undefined) {
     if (!newProps) newProps = this.props;
-    if (newProps.chartsDataFlowStatus[dataGeneratorAttribute.pause]) {
-      if (dataGeneratorAttribute.generatorInterval) {
-        clearInterval(dataGeneratorAttribute.generatorInterval);
-        dataGeneratorAttribute.generatorInterval = null;
+    if (
+      newProps.chartsDataFlowStatus[this.graphGeneratorAttributes[key].pause] ||
+      this.props.callbackRegisterStatus[key]
+    ) {
+      if (this.graphGeneratorAttributes[key].generatorInterval) {
+        clearInterval(this.graphGeneratorAttributes[key].generatorInterval);
+        this.graphGeneratorAttributes[key].generatorInterval = null;
       }
-    } else if (!dataGeneratorAttribute.generatorInterval) {
+    } else if (!this.graphGeneratorAttributes[key].generatorInterval) {
       console.debug(
         "Starting data generation for: ",
-        dataGeneratorAttribute.pause
+        this.graphGeneratorAttributes[key].pause
       );
-      dataGeneratorAttribute.generatorInterval = setInterval(
-        dataGeneratorAttribute.generator,
+      this.graphGeneratorAttributes[key].generatorInterval = setInterval(
+        this.graphGeneratorAttributes[key].generator,
         (Math.random() + 1) * 2 * 1000
       );
     }

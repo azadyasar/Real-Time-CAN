@@ -2,7 +2,8 @@ import {
   UPDATE_CHART_DATA,
   CHANGE_ALL_GRAPH_FLOW,
   CHANGE_GRAPH_FLOW,
-  RESET_ALL_CHART_DATA
+  RESET_ALL_CHART_DATA,
+  SET_CALLBACK_REGISTER
 } from "../constants/action-types";
 
 const initialLineData = {
@@ -96,6 +97,12 @@ const initialChartState = {
     rpmDataFlowPause: true,
     fuelDataFlowPause: true,
     emissionDataFlowPause: true
+  },
+  callbackRegisterStatus: {
+    speedLineData: false,
+    rpmLineData: false,
+    fuelDoughnutData: false,
+    emissionsScatterData: false
   }
 };
 
@@ -129,6 +136,13 @@ function chartReducer(state = initialChartState, action) {
         fuelData: initialFuelDoughnutData,
         rpmData: initialRpmLineData,
         emissionsData: initialEmissionScatterData
+      });
+    case SET_CALLBACK_REGISTER:
+      return Object.assign({}, state, {
+        callbackRegisterStatus: {
+          ...state.callbackRegisterStatus,
+          [action.payload.chartName]: action.payload.status
+        }
       });
     default:
       return state;

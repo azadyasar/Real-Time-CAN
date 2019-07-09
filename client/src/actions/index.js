@@ -7,7 +7,8 @@ import {
   SUBSCRIBE_TO_TOPIC,
   RESET_ALL_CHART_DATA,
   SET_IS_CONNECTING,
-  ADD_OBSERVER
+  ADD_OBSERVER,
+  SET_CALLBACK_REGISTER
 } from "../constants/action-types";
 
 // MQTT
@@ -85,6 +86,13 @@ export function resetAllChartData(payload) {
 export function addObserver(payload) {
   return {
     type: ADD_OBSERVER,
+    payload
+  };
+}
+
+export function setCallbackRegister(payload) {
+  return {
+    type: SET_CALLBACK_REGISTER,
     payload
   };
 }
