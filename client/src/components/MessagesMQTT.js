@@ -81,6 +81,7 @@ export class ConnectedMessagesMQTT extends Component {
         this.checkIfMqttConnected,
         this.MQTT_CONNECT_TIMEOUT
       );
+      this.checkConnectionSpinner(true);
     } else {
       this.stopMqttBlink();
       this.cancelMqttConnectionChecker();
@@ -109,7 +110,9 @@ export class ConnectedMessagesMQTT extends Component {
           this.MQTT_CONNECT_TIMEOUT
         );
       }
+      this.checkConnectionSpinner(true);
     } else {
+      this.checkConnectionSpinner(false);
       this.stopMqttBlink();
       this.cancelMqttConnectionChecker();
     }
@@ -261,6 +264,7 @@ export class ConnectedMessagesMQTT extends Component {
     // toast.info("MQTT Connection Ended");
     console.debug("mqttOnEnd");
     toast.info("MQTT connection is closed.");
+    this.checkConnectionSpinner(false);
     this.stopMqttBlink();
     this.cancelMqttConnectionChecker();
     this.props.setIsConnecting({ isConnecting: false });
@@ -280,6 +284,7 @@ export class ConnectedMessagesMQTT extends Component {
   onMQTTBrokerDetailsSubmit = targetMqttBrokerInfo => {
     this.connectToMqttBroker(targetMqttBrokerInfo);
 
+    this.checkConnectionSpinner(true);
     this.bottomToast("Connecting to the broker...");
     this.props.setIsConnecting({ isConnecting: true });
     this.setState({
@@ -436,18 +441,62 @@ export class ConnectedMessagesMQTT extends Component {
             getMqttBrokerInfoTxt={this.getMqttBrokerInfoTxt}
             getSubscribedTopicsTxt={this.getSubscribedTopicsTxt}
           />
-          <div className="row justify-content-center m-5 w-25">
-            <div className="col-3" align="center">
+          <div className="row justify-content-center m-5 w-50">
+            <div className="col-6 m-2" align="center">
+              <div className="btn-group">
+                <button
+                  type="button"
+                  className="btn btn-outline-primary"
+                  id="mqttConnectButton"
+                  data-toggle="modal"
+                  data-target="#mqttServerDetailsModal"
+                >
+                  <span
+                    className="spinner-border spinner-border-sm mx-1"
+                    role="status"
+                    aria-hidden="true"
+                    hidden={true}
+                  />
+                  Connect
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-primary"
+                  data-toggle="modal"
+                  data-target="#mqttSubscribeTopics"
+                >
+                  Subscribe
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-primary"
+                  data-toggle="modal"
+                  data-target="#mqttPubMsgModal"
+                >
+                  Publish
+                </button>
+              </div>
+            </div>
+            {/* <div className="col-3 m-2" align="center">
               <button
                 type="button"
                 className="btn btn-primary"
+                id="mqttConnectButton"
                 data-toggle="modal"
                 data-target="#mqttServerDetailsModal"
               >
+                <span
+                  className="spinner-border spinner-border-sm mx-1"
+                  role="status"
+                  aria-hidden="true"
+                  hidden={true}
+                />
                 Connect
               </button>
             </div>
-            <div className="col-3" align="center">
+            <div className="col-3 m-2" align="center">
               <button
                 type="button"
                 className="btn btn-primary"
@@ -457,7 +506,7 @@ export class ConnectedMessagesMQTT extends Component {
                 Subscribe
               </button>
             </div>
-            <div className="col-3" align="center">
+            <div className="col-3 m-2" align="center">
               <button
                 type="button"
                 className="btn btn-primary"
@@ -466,7 +515,7 @@ export class ConnectedMessagesMQTT extends Component {
               >
                 Publish
               </button>
-            </div>
+            </div> */}
           </div>
 
           <div className="row justify-content-center m-5">
@@ -578,6 +627,21 @@ export class ConnectedMessagesMQTT extends Component {
       console.debug("Cancelling connection checker");
       clearTimeout(this.checkIfMqttConnectedTimeout);
       this.checkIfMqttConnectedTimeout = null;
+    }
+  }
+
+  checkConnectionSpinner(shouldShow) {
+    const connectBtnElement = document.getElementById("mqttConnectButton");
+    let spinnerElement;
+    if (connectBtnElement)
+      if (shouldShow) connectBtnElement.setAttribute("disabled", true);
+      else connectBtnElement.removeAttribute("disabled");
+    spinnerElement = connectBtnElement.getElementsByClassName(
+      "spinner-border"
+    )[0];
+    if (spinnerElement) {
+      if (shouldShow) spinnerElement.removeAttribute("hidden");
+      else spinnerElement.setAttribute("hidden", "true");
     }
   }
 }
