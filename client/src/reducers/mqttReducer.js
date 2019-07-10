@@ -29,6 +29,11 @@ function mqttReducer(state = initialState, action) {
         )
       });
     case SUBSCRIBE_TO_TOPIC:
+      const filteredTopics = state.subscribedTopics.filter(
+        topic => topic === action.payload
+      );
+      if (filteredTopics.length !== 0) return state;
+
       if (state.mqttClient) state.mqttClient.subscribe(action.payload);
       return Object.assign({}, state, {
         subscribedTopics: state.subscribedTopics.concat(action.payload)
