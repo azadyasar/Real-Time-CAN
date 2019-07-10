@@ -8,7 +8,8 @@ import {
   RESET_ALL_CHART_DATA,
   SET_IS_CONNECTING,
   ADD_OBSERVER,
-  SET_CALLBACK_REGISTER
+  SET_CALLBACK_REGISTER,
+  REMOVE_OBSERVER
 } from "../constants/action-types";
 
 // MQTT
@@ -86,6 +87,18 @@ export function resetAllChartData(payload) {
 export function addObserver(payload) {
   return {
     type: ADD_OBSERVER,
+    payload
+  };
+}
+
+/**
+ *
+ * @param {Object} payload - Should include `chartName` of target chart which will be used to retrieve
+ * the latest topic the corresponding chart subscribed to and `callback` to filter callback array
+ */
+export function removeObserver(payload) {
+  return {
+    type: REMOVE_OBSERVER,
     payload
   };
 }

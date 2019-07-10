@@ -4,6 +4,18 @@ import classNames from "classnames";
 import PropTypes from "prop-types";
 
 export default class DoughnutChart extends Component {
+  onHookBtnClick = event => {
+    if (this.props.isHooked)
+      // eslint-disable-next-line no-undef
+      $(`#${this.props.target}`).modal("hide");
+    // eslint-disable-next-line no-undef
+    else $(`#${this.props.target}`).modal();
+    event.preventDefault();
+    event.graphTarget = this.props.graphTarget;
+    event.isAlreadyHooked = this.props.isHooked;
+    this.props.onHookBtnClick(event);
+  };
+
   render() {
     return (
       <div className="card chart-card">
@@ -21,17 +33,16 @@ export default class DoughnutChart extends Component {
             {this.getContinuePauseText(this.props.dataFlowPause)}
           </button>
           <button
-            className="btn m2-2 btn-outline-success"
+            className={classNames("btn m-2", {
+              "btn-outline-success": !this.props.isHooked,
+              "btn-outline-danger": this.props.isHooked
+            })}
             name={this.props.title}
-            data-toggle="modal"
+            // data-toggle="modal"
             data-target={`#${this.props.target}`}
-            onClick={e => {
-              e.preventDefault();
-              e.graphTarget = this.props.graphTarget;
-              this.props.onHookBtnClick(e);
-            }}
+            onClick={this.onHookBtnClick}
           >
-            Hook
+            {this.getHookDetachText(this.props.isHooked)}
           </button>
         </div>
       </div>
@@ -45,6 +56,10 @@ export default class DoughnutChart extends Component {
   getContinuePauseText(isFlowPaused) {
     return isFlowPaused ? "Continue" : "Pause";
   }
+
+  getHookDetachText(isHooked) {
+    return isHooked ? "Detach" : "Hook";
+  }
 }
 
 DoughnutChart.propTypes = {
@@ -56,5 +71,6 @@ DoughnutChart.propTypes = {
   dataFlowPause: PropTypes.bool.isRequired,
   target: PropTypes.string.isRequired,
   onHookBtnClick: PropTypes.func.isRequired,
-  graphTarget: PropTypes.string.isRequired
+  graphTarget: PropTypes.string.isRequired,
+  isHooked: PropTypes.bool.isRequired
 };

@@ -33,6 +33,11 @@ export default class MqttPubMsgModal extends Component {
     });
   };
 
+  onClearStateBtnClick = event => {
+    event.preventDefault();
+    this.setState({ pubMsg: "", pubTopic: "", mqttQos: 0, retain: false });
+  };
+
   onPubMsgClick = event => {
     event.preventDefault();
 
@@ -42,7 +47,7 @@ export default class MqttPubMsgModal extends Component {
     }
 
     // eslint-disable-next-line no-undef
-    $(`#${this.props.modalId}`).modal("hide");
+    // $(`#${this.props.modalId}`).modal("hide");
 
     this.props.onPubMsgSubmit({
       topic: this.state.pubTopic,
@@ -50,7 +55,6 @@ export default class MqttPubMsgModal extends Component {
       qos: this.state.mqttQos,
       retain: this.state.retain
     });
-    this.setState({ pubMsg: "", pubTopic: "" });
   };
 
   render() {
@@ -216,6 +220,13 @@ export default class MqttPubMsgModal extends Component {
                 data-dismiss="modal"
               >
                 Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline-info"
+                onClick={this.onClearStateBtnClick}
+              >
+                Clear
               </button>
               <button
                 type="button"

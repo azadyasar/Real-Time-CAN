@@ -311,7 +311,7 @@ export class ConnectedMessagesMQTT extends Component {
     if (
       this.mqttClient &&
       (this.mqttClient.connected || this.mqttClient.reconnecting) &&
-      !this.mqttClient.disconnected
+      !this.mqttClient.disconnecting
     ) {
       this.mqttClient.end();
       toast.info("Closing the MQTT connection...");

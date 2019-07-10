@@ -10,7 +10,8 @@ import {
   resetAllChartData,
   addObserver,
   setCallbackRegister,
-  subscribeToTopic
+  subscribeToTopic,
+  removeObserver
 } from "../actions";
 
 import HookChartModal from "./Modals/HookChartModal";
@@ -45,6 +46,7 @@ const mapDispatchToProps = dispatch => {
     changeAllGraphFlow: signal => dispatch(changeAllGraphFlow(signal)),
     resetAllChartData: signal => dispatch(resetAllChartData(signal)),
     addObserver: observerInfo => dispatch(addObserver(observerInfo)),
+    removeObserver: observerInfo => dispatch(removeObserver(observerInfo)),
     setCallbackRegister: (chartName, status) =>
       dispatch(setCallbackRegister({ chartName, status })),
     subscribeToTopic: topic => dispatch(subscribeToTopic(topic))
@@ -63,6 +65,7 @@ export class ConnectedChartsContainer extends Component {
     this.graphGeneratorAttributes = {
       speedLineData: {
         generator: this.generateLineData,
+        callback: () => console.error("Implement me!!"),
         pause: "speedDataFlowPause",
         generatorInterval: null
       },
@@ -74,11 +77,13 @@ export class ConnectedChartsContainer extends Component {
       },
       fuelDoughnutData: {
         generator: this.generateFuelData,
+        callback: () => console.error("Implement me!!"),
         pause: "fuelDataFlowPause",
         generatorInterval: null
       },
       emissionsScatterData: {
         generator: this.generateEmissionScatterData,
+        callback: () => console.error("Implement me!!"),
         pause: "emissionDataFlowPause",
         generatorInterval: null
       }
@@ -272,14 +277,24 @@ export class ConnectedChartsContainer extends Component {
   };
 
   onHookChartDataBtnClick = event => {
-    toast.info("Hooking " + event.graphTarget);
-    this.observerChartName = event.graphTarget;
+    if (event.isAlreadyHooked) {
+      toast.info("Detaching " + event.graphTarget);
+      this.props.setCallbackRegister(event.graphTarget, false);
+      this.props.removeObserver({
+        chartName: event.graphTarget,
+        callback: this.graphGeneratorAttributes[event.graphTarget].callback
+      });
+    } else {
+      toast.info("Hooking " + event.graphTarget);
+      this.observerChartName = event.graphTarget;
+    }
   };
 
   onHookChartDataSubmit = topicName => {
     toast.info("Subscribing to " + topicName);
     this.props.addObserver({
       topicName: topicName,
+      chartName: this.observerChartName,
       callback: this.graphGeneratorAttributes[this.observerChartName].callback
     });
     this.props.setCallbackRegister(this.observerChartName, true);
@@ -305,7 +320,7 @@ export class ConnectedChartsContainer extends Component {
         />
         <div className="row  justify-content-center">
           {/* Speed Graph */}
-          <div className="col-xl-4 col-lg-6 col-md-6 m-4 h-100" align="center">
+          <div className="col-xl-4  col-md-5 mx-2 my-4 h-100" align="center">
             <LineChart
               title="Speed"
               graphName="speedDataFlowPause"
@@ -316,10 +331,11 @@ export class ConnectedChartsContainer extends Component {
               dataFlowPause={this.props.chartsDataFlowStatus.speedDataFlowPause}
               onHookBtnClick={this.onHookChartDataBtnClick}
               target="hookChartModalId"
+              isHooked={this.props.callbackRegisterStatus["speedLineData"]}
             />
           </div>
           {/* RPM Graph */}
-          <div className="col-xl-4 col-lg-6 col-md-6 m-4 h-100" align="center">
+          <div className="col-xl-4  col-md-5 mx-2 my-4 h-100" align="center">
             <LineChart
               title="RPM"
               graphName="rpmDataFlowPause"
@@ -330,10 +346,11 @@ export class ConnectedChartsContainer extends Component {
               dataFlowPause={this.props.chartsDataFlowStatus.rpmDataFlowPause}
               onHookBtnClick={this.onHookChartDataBtnClick}
               target="hookChartModalId"
+              isHooked={this.props.callbackRegisterStatus["rpmLineData"]}
             />
           </div>
           {/* Doughnut Chart */}
-          <div className="col-xl-4 col-lg-6 col-md-6 m-4 h-100" align="center">
+          <div className="col-xl-4  col-md-5 mx-2 my-4 h-100" align="center">
             <DoughnutChart
               title="Fuel Usage"
               graphName="fuelDataFlowPause"
@@ -343,11 +360,12 @@ export class ConnectedChartsContainer extends Component {
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
               dataFlowPause={this.props.chartsDataFlowStatus.fuelDataFlowPause}
               onHookBtnClick={this.onHookChartDataBtnClick}
+              isHooked={this.props.callbackRegisterStatus["fuelDoughnutData"]}
               target="hookChartModalId"
             />
           </div>
           {/* Scatter Chart (Emissions) */}
-          <div className="col-xl-4 col-lg-6 col-md-6 m-4 h-100" align="center">
+          <div className="col-xl-4  col-md-5 mx-2 my-4 h-100" align="center">
             <ScatterChart
               title="Emission"
               graphName="emissionDataFlowPause"
@@ -358,6 +376,9 @@ export class ConnectedChartsContainer extends Component {
                 this.props.chartsDataFlowStatus.emissionDataFlowPause
               }
               onHookBtnClick={this.onHookChartDataBtnClick}
+              isHooked={
+                this.props.callbackRegisterStatus["emissionsScatterData"]
+              }
               target="hookChartModalId"
             />
           </div>
