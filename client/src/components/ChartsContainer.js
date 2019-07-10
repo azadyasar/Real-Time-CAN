@@ -8,6 +8,7 @@ import {
   changeGraphFlow,
   changeAllGraphFlow,
   resetAllChartData,
+  resetChartData,
   addObserver,
   setCallbackRegister,
   subscribeToTopic,
@@ -20,6 +21,7 @@ import ChartsToolbar from "./ChartsToolbar";
 import LineChart from "./Charts/LineChart";
 import DoughnutChart from "./Charts/DoughnutChart";
 import ScatterChart from "./Charts/ScatterChart";
+import BarChart from "./Charts/BarChart";
 import { toast } from "react-toastify";
 
 // eslint-disable-next-line
@@ -29,10 +31,11 @@ function getRandomInt(min, max) {
 
 const mapStateToProps = state => {
   return {
-    lineData: state.chart.lineData,
-    rpmData: state.chart.rpmData,
-    fuelData: state.chart.fuelData,
-    emissionsData: state.chart.emissionsData,
+    speedLineData: state.chart.speedLineData,
+    rpmLineData: state.chart.rpmLineData,
+    fuelDoughnutData: state.chart.fuelDoughnutData,
+    emissionsScatterData: state.chart.emissionsScatterData,
+    mqttBarData: state.chart.mqttBarData,
     chartsDataFlowStatus: state.chart.chartsDataFlowStatus,
     isAllGraphFlowPaused: state.chart.isAllGraphFlowPaused,
     callbackRegisterStatus: state.chart.callbackRegisterStatus
@@ -49,7 +52,8 @@ const mapDispatchToProps = dispatch => {
     removeObserver: observerInfo => dispatch(removeObserver(observerInfo)),
     setCallbackRegister: (chartName, status) =>
       dispatch(setCallbackRegister({ chartName, status })),
-    subscribeToTopic: topic => dispatch(subscribeToTopic(topic))
+    subscribeToTopic: topic => dispatch(subscribeToTopic(topic)),
+    resetChartData: chartName => dispatch(resetChartData(chartName))
   };
 };
 
@@ -65,7 +69,7 @@ export class ConnectedChartsContainer extends Component {
     this.graphGeneratorAttributes = {
       speedLineData: {
         generator: this.generateLineData,
-        callback: () => console.error("Implement me!!"),
+        callback: this.callbackSpeedLineData, // () => console.error("Implement me!!"),
         pause: "speedDataFlowPause",
         generatorInterval: null
       },
@@ -85,6 +89,12 @@ export class ConnectedChartsContainer extends Component {
         generator: this.generateEmissionScatterData,
         callback: () => console.error("Implement me!!"),
         pause: "emissionDataFlowPause",
+        generatorInterval: null
+      },
+      mqttBarData: {
+        generator: this.generateMqttBarData,
+        callback: this.callbackMqttBarData,
+        pause: "mqttBarDataFlowPause",
         generatorInterval: null
       }
     };
@@ -127,13 +137,13 @@ export class ConnectedChartsContainer extends Component {
   generateLineData = () => {
     console.debug("generateLineData");
     if (this.props.chartsDataFlowStatus.speedDataFlowPause) return;
-    let tempDataCopy = this.props.lineData.datasets[0].data.concat(
+    let tempDataCopy = this.props.speedLineData.datasets[0].data.concat(
       10 + Math.random() * 10
     );
-    let humDataCopy = this.props.lineData.datasets[1].data.concat(
+    let humDataCopy = this.props.speedLineData.datasets[1].data.concat(
       10 + Math.random() * 10
     );
-    let labelsCopy = this.props.lineData.labels.concat(moment().format());
+    let labelsCopy = this.props.speedLineData.labels.concat(moment().format());
 
     if (tempDataCopy.length > this.dataLengthLimit)
       tempDataCopy = tempDataCopy.slice(
@@ -151,20 +161,73 @@ export class ConnectedChartsContainer extends Component {
         labelsCopy.length
       );
 
-    const lineDataCopy = Object.assign({}, this.props.lineData);
+    const lineDataCopy = Object.assign({}, this.props.speedLineData);
     lineDataCopy.labels = labelsCopy;
     lineDataCopy.datasets[0].data = tempDataCopy;
     lineDataCopy.datasets[1].data = humDataCopy;
-    this.props.updateChartData({ data: lineDataCopy, chartName: "lineData" });
+    this.props.updateChartData({
+      data: lineDataCopy,
+      chartName: "speedLineData"
+    });
+  };
+
+  callbackSpeedLineData = (topic, message) => {
+    console.log("Callback speedline data...");
+    if (this.props.chartsDataFlowStatus.speedDataFlowPause) return;
+    console.log("+");
+
+    const incomingValue = Number(message.toString());
+    console.log("callbackSpeed incoming value: ", incomingValue);
+    if (!Number.isNaN(incomingValue)) {
+      let tempDataCopy = this.props.speedLineData.datasets[0].data.concat(
+        incomingValue
+      );
+      let humDataCopy = this.props.speedLineData.datasets[1].data.concat(
+        100 - incomingValue
+      );
+      let labelsCopy = this.props.speedLineData.labels.concat(
+        moment().format()
+      );
+      if (tempDataCopy.length > this.dataLengthLimit)
+        tempDataCopy = tempDataCopy.slice(
+          tempDataCopy.length - this.dataLengthLimit,
+          tempDataCopy.length
+        );
+      if (humDataCopy.length > this.dataLengthLimit)
+        humDataCopy = humDataCopy.slice(
+          humDataCopy.length - this.dataLengthLimit,
+          humDataCopy.length
+        );
+      if (labelsCopy.length > this.dataLengthLimit)
+        labelsCopy = labelsCopy.slice(
+          labelsCopy.length - this.dataLengthLimit,
+          labelsCopy.length
+        );
+
+      const lineDataCopy = Object.assign({}, this.props.speedLineData);
+      lineDataCopy.labels = labelsCopy;
+      lineDataCopy.datasets[0].data = tempDataCopy;
+      lineDataCopy.datasets[1].data = humDataCopy;
+      this.props.updateChartData({
+        data: lineDataCopy,
+        chartName: "speedLineData"
+      });
+    } else {
+      toast.warn(
+        "Received message contains a non-numeric value: " + message.toString()
+      );
+    }
   };
 
   generateRPMLineData = () => {
     console.debug("generateRPMLineData");
     if (this.props.chartsDataFlowStatus.rpmDataFlowPause) return;
-    let rpmDataDatasetCopy = this.props.rpmData.datasets[0].data.concat(
+    let rpmDataDatasetCopy = this.props.rpmLineData.datasets[0].data.concat(
       10 + Math.random() * 10
     );
-    let rmpDataLabelsCopy = this.props.rpmData.labels.concat(moment().format());
+    let rmpDataLabelsCopy = this.props.rpmLineData.labels.concat(
+      moment().format()
+    );
 
     if (rpmDataDatasetCopy.length > this.dataLengthLimit)
       rpmDataDatasetCopy = rpmDataDatasetCopy.slice(
@@ -178,21 +241,21 @@ export class ConnectedChartsContainer extends Component {
         rmpDataLabelsCopy.length
       );
 
-    const rpmDataCopy = Object.assign({}, this.props.rpmData);
+    const rpmDataCopy = Object.assign({}, this.props.rpmLineData);
     rpmDataCopy.labels = rmpDataLabelsCopy;
     rpmDataCopy.datasets[0].data = rpmDataDatasetCopy;
-    this.props.updateChartData({ data: rpmDataCopy, chartName: "rpmData" });
+    this.props.updateChartData({ data: rpmDataCopy, chartName: "rpmLineData" });
   };
 
-  callbackRPMLineData = message => {
+  callbackRPMLineData = (topic, message) => {
     console.debug("callbackRPMLineData");
     if (this.props.chartsDataFlowStatus.rpmDataFlowPause) return;
     const incomingValue = Number(message.toString());
     if (!Number.isNaN(incomingValue)) {
-      let rpmDataDatasetCopy = this.props.rpmData.datasets[0].data.concat(
+      let rpmDataDatasetCopy = this.props.rpmLineData.datasets[0].data.concat(
         incomingValue
       );
-      let rmpDataLabelsCopy = this.props.rpmData.labels.concat(
+      let rmpDataLabelsCopy = this.props.rpmLineData.labels.concat(
         moment().format()
       );
       if (rpmDataDatasetCopy.length > this.dataLengthLimit)
@@ -206,10 +269,13 @@ export class ConnectedChartsContainer extends Component {
           rmpDataLabelsCopy.length - this.dataLengthLimit,
           rmpDataLabelsCopy.length
         );
-      const rpmDataCopy = Object.assign({}, this.props.rpmData);
+      const rpmDataCopy = Object.assign({}, this.props.rpmLineData);
       rpmDataCopy.labels = rmpDataLabelsCopy;
       rpmDataCopy.datasets[0].data = rpmDataDatasetCopy;
-      this.props.updateChartData({ data: rpmDataCopy, chartName: "rpmData" });
+      this.props.updateChartData({
+        data: rpmDataCopy,
+        chartName: "rpmLineData"
+      });
     } else {
       toast.warn(
         "Received message contains a non-numeric value: " + message.toString()
@@ -220,19 +286,62 @@ export class ConnectedChartsContainer extends Component {
   generateFuelData = () => {
     console.debug("generateFuelData");
     if (this.props.chartsDataFlowStatus.fuelDataFlowPause) return;
-    const fuelDataCopy = Object.assign({}, this.props.fuelData);
-    fuelDataCopy.datasets[0].data = this.getDoughnutData();
-    this.props.updateChartData({ data: fuelDataCopy, chartName: "fuelData" });
+    let fuelDataCopy = this.getDoughnutData();
+    const newFuelDoughnutData = Object.assign({}, this.props.fuelDoughnutData);
+    newFuelDoughnutData.datasets[0].data = fuelDataCopy;
+    this.props.updateChartData({
+      data: newFuelDoughnutData,
+      chartName: "fuelDoughnutData"
+    });
   };
 
   generateEmissionScatterData = () => {
     console.debug("generateEmissionScatterData");
     if (this.props.chartsDataFlowStatus.emissionDataFlowPause) return;
-    const emissionScatterDataCopy = Object.assign({}, this.props.emissionsData);
+    const emissionScatterDataCopy = Object.assign(
+      {},
+      this.props.emissionsScatterData
+    );
     emissionScatterDataCopy.datasets[0].data = this.getScatterDataSet();
     this.props.updateChartData({
       data: emissionScatterDataCopy,
-      chartName: "emissionsData"
+      chartName: "emissionsScatterData"
+    });
+  };
+
+  generateMqttBarData = () => {
+    console.debug("generateMqttBarData");
+    if (this.props.chartsDataFlowStatus.mqttBarDataFlowPause) return;
+    const mqttBarChartCopy = Object.assign({}, this.props.mqttBarData);
+    let newData = [];
+    for (let i = 0; i < this.props.mqttBarData.labels.length; i++)
+      newData.push((Math.random() + 5) * 10);
+    mqttBarChartCopy.datasets[0].data = newData;
+    this.props.updateChartData({
+      data: mqttBarChartCopy,
+      chartName: "mqttBarData"
+    });
+  };
+
+  callbackMqttBarData = (topic, message) => {
+    console.debug("cbMqttBarData");
+    if (this.props.chartsDataFlowStatus.mqttBarDataFlowPause) return;
+
+    const incomingValue = Number(message.toString());
+    if (Number.isNaN(incomingValue)) {
+      toast.warn(
+        "Received message contains a non-numeric value: " + message.toString()
+      );
+      return;
+    }
+
+    const mqttBarChartCopy = Object.assign({}, this.props.mqttBarData);
+    let newData = mqttBarChartCopy.datasets[0].data.concat();
+    newData[mqttBarChartCopy.topics.indexOf(topic)] = incomingValue;
+    mqttBarChartCopy.datasets[0].data = newData;
+    this.props.updateChartData({
+      data: mqttBarChartCopy,
+      chartName: "mqttBarData"
     });
   };
 
@@ -240,6 +349,15 @@ export class ConnectedChartsContainer extends Component {
     console.debug("ChartContainer did mount");
     Object.keys(this.graphGeneratorAttributes).forEach(key => {
       this.shouldGenerateData(key);
+    });
+
+    this.props.mqttBarData.topics.forEach(topic => {
+      this.props.addObserver({
+        topicName: topic,
+        chartName: "mqttBarData",
+        callback: this.graphGeneratorAttributes["mqttBarData"].callback
+      });
+      this.props.subscribeToTopic(topic);
     });
   }
 
@@ -276,22 +394,27 @@ export class ConnectedChartsContainer extends Component {
     this.props.resetAllChartData(null);
   };
 
+  onCleanChartDataBtnClick = event => {
+    console.debug("clean chart:", event.target);
+    event.preventDefault();
+    this.props.resetChartData({ chartName: event.target.name });
+  };
+
   onHookChartDataBtnClick = event => {
     if (event.isAlreadyHooked) {
-      toast.info("Detaching " + event.graphTarget);
+      toast.info(event.graphTarget + " detached.");
       this.props.setCallbackRegister(event.graphTarget, false);
       this.props.removeObserver({
         chartName: event.graphTarget,
         callback: this.graphGeneratorAttributes[event.graphTarget].callback
       });
     } else {
-      toast.info("Hooking " + event.graphTarget);
       this.observerChartName = event.graphTarget;
     }
   };
 
   onHookChartDataSubmit = topicName => {
-    toast.info("Subscribing to " + topicName);
+    toast.info("Hooked " + this.observerChartName + " to " + topicName);
     this.props.addObserver({
       topicName: topicName,
       chartName: this.observerChartName,
@@ -325,13 +448,14 @@ export class ConnectedChartsContainer extends Component {
               title="Speed"
               graphName="speedDataFlowPause"
               graphTarget="speedLineData"
-              data={this.props.lineData}
+              data={this.props.speedLineData}
               options={this.lineGraphOptions}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
               dataFlowPause={this.props.chartsDataFlowStatus.speedDataFlowPause}
               onHookBtnClick={this.onHookChartDataBtnClick}
               target="hookChartModalId"
               isHooked={this.props.callbackRegisterStatus["speedLineData"]}
+              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
             />
           </div>
           {/* RPM Graph */}
@@ -340,13 +464,14 @@ export class ConnectedChartsContainer extends Component {
               title="RPM"
               graphName="rpmDataFlowPause"
               graphTarget="rpmLineData"
-              data={this.props.rpmData}
-              options={this.lineGraphOptions}
+              data={this.props.rpmLineData}
+              options={Object.assign({}, this.lineGraphOptions, { fill: true })}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
               dataFlowPause={this.props.chartsDataFlowStatus.rpmDataFlowPause}
               onHookBtnClick={this.onHookChartDataBtnClick}
               target="hookChartModalId"
               isHooked={this.props.callbackRegisterStatus["rpmLineData"]}
+              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
             />
           </div>
           {/* Doughnut Chart */}
@@ -354,14 +479,33 @@ export class ConnectedChartsContainer extends Component {
             <DoughnutChart
               title="Fuel Usage"
               graphName="fuelDataFlowPause"
-              graphTarget="fuelData"
-              data={this.props.fuelData}
+              graphTarget="fuelDoughnutData"
+              data={this.props.fuelDoughnutData}
               options={this.lineGraphOptions}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
               dataFlowPause={this.props.chartsDataFlowStatus.fuelDataFlowPause}
               onHookBtnClick={this.onHookChartDataBtnClick}
               isHooked={this.props.callbackRegisterStatus["fuelDoughnutData"]}
               target="hookChartModalId"
+              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
+            />
+          </div>
+          {/* Bar Chart */}
+          <div className="col-xl-4  col-md-5 mx-2 my-4 h-100" align="center">
+            <BarChart
+              title="BarChart"
+              graphName="mqttBarDataFlowPause"
+              graphTarget="barChart"
+              data={this.props.mqttBarData}
+              onGraphFlowBtnClick={this.onGraphFlowBtnClick}
+              dataFlowPause={
+                this.props.chartsDataFlowStatus.mqttBarDataFlowPause
+              }
+              onHookBtnClick={this.onHookChartDataBtnClick}
+              isHooked={this.props.callbackRegisterStatus["mqttBarData"]}
+              target="hookChartModalId"
+              isHookable={false}
+              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
             />
           </div>
           {/* Scatter Chart (Emissions) */}
@@ -370,7 +514,7 @@ export class ConnectedChartsContainer extends Component {
               title="Emission"
               graphName="emissionDataFlowPause"
               graphTarget="emissionsScatterData"
-              data={this.props.emissionsData}
+              data={this.props.emissionsScatterData}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
               dataFlowPause={
                 this.props.chartsDataFlowStatus.emissionDataFlowPause
@@ -380,6 +524,7 @@ export class ConnectedChartsContainer extends Component {
                 this.props.callbackRegisterStatus["emissionsScatterData"]
               }
               target="hookChartModalId"
+              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
             />
           </div>
         </div>

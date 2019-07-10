@@ -3,6 +3,7 @@ import {
   CHANGE_ALL_GRAPH_FLOW,
   CHANGE_GRAPH_FLOW,
   RESET_ALL_CHART_DATA,
+  RESET_CHART_DATA,
   SET_CALLBACK_REGISTER
 } from "../constants/action-types";
 
@@ -15,7 +16,7 @@ const initialLineData = {
       borderJoinStyle: "miter",
       pointHitRadius: 10,
       data: [],
-      fill: false, // Don't fill area under the line
+      fill: 1, // Don't fill area under the line
       borderColor: "green", // Line color
       pointRadius: 5
     },
@@ -37,7 +38,7 @@ const initialRpmLineData = {
       borderJoinStyle: "miter",
       pointHitRadius: 10,
       data: [],
-      fill: false, // Don't fill area under the line
+      fill: "origin", // Don't fill area under the line
       borderColor: "blue", // Line color
       pointRadius: 5
     }
@@ -86,23 +87,55 @@ const initialEmissionScatterData = {
   ]
 };
 
+const initialMqttBarData = {
+  labels: ["Connected", "Total", "Subscriptions"], //, "Messages"],
+  topics: [
+    "$SYS/broker/clients/connected",
+    "$SYS/broker/clients/total",
+    "$SYS/broker/subscriptions/count"
+    // "$SYS/broker/publish/messages/sent"
+  ],
+  datasets: [
+    {
+      label: "MQTT Broker Info",
+      backgroundColor: "rgba(255,99,132,0.2)",
+      borderColor: "rgba(255,99,132,1)",
+      borderWidth: 1,
+      hoverBackgroundColor: "rgba(255,99,132,0.4)",
+      hoverBorderColor: "rgba(255,99,132,1)",
+      data: []
+    }
+  ]
+};
+
+const chartNameInitialDataDict = {
+  speedLineData: initialLineData,
+  rpmLineData: initialRpmLineData,
+  fuelDoughnutData: initialFuelDoughnutData,
+  emissionsScatterData: initialEmissionScatterData,
+  mqttBarData: initialMqttBarData
+};
+
 const initialChartState = {
   isAllGraphFlowPaused: true,
-  lineData: initialLineData,
-  rpmData: initialRpmLineData,
-  fuelData: initialFuelDoughnutData,
-  emissionsData: initialEmissionScatterData,
+  speedLineData: initialLineData,
+  rpmLineData: initialRpmLineData,
+  fuelDoughnutData: initialFuelDoughnutData,
+  emissionsScatterData: initialEmissionScatterData,
+  mqttBarData: initialMqttBarData,
   chartsDataFlowStatus: {
     speedDataFlowPause: true,
     rpmDataFlowPause: true,
     fuelDataFlowPause: true,
-    emissionDataFlowPause: true
+    emissionDataFlowPause: true,
+    mqttBarDataFlowPause: true
   },
   callbackRegisterStatus: {
     speedLineData: false,
     rpmLineData: false,
     fuelDoughnutData: false,
-    emissionsScatterData: false
+    emissionsScatterData: false,
+    mqttBarData: true
   }
 };
 
@@ -132,10 +165,24 @@ function chartReducer(state = initialChartState, action) {
       });
     case RESET_ALL_CHART_DATA:
       return Object.assign({}, state, {
-        lineData: initialLineData,
-        fuelData: initialFuelDoughnutData,
-        rpmData: initialRpmLineData,
-        emissionsData: initialEmissionScatterData
+        speedLineData: initialLineData,
+        fuelDoughnutData: initialFuelDoughnutData,
+        rpmLineData: initialRpmLineData,
+        emissionsScatterData: initialEmissionScatterData,
+        mqttBarData: initialMqttBarData
+      });
+    case RESET_CHART_DATA:
+      console.log(
+        "Cleaning: ",
+        action,
+        ", ",
+        state[action.payload.chartName],
+        ", ",
+        chartNameInitialDataDict[action.payload.chartName]
+      );
+      return Object.assign({}, state, {
+        [action.payload.chartName]:
+          chartNameInitialDataDict[action.payload.chartName]
       });
     case SET_CALLBACK_REGISTER:
       return Object.assign({}, state, {

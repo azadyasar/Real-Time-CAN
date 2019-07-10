@@ -6,6 +6,7 @@ import {
   CHANGE_GRAPH_FLOW,
   SUBSCRIBE_TO_TOPIC,
   RESET_ALL_CHART_DATA,
+  RESET_CHART_DATA,
   SET_IS_CONNECTING,
   ADD_OBSERVER,
   SET_CALLBACK_REGISTER,
@@ -75,6 +76,13 @@ export function changeGraphFlow(payload) {
 export function resetAllChartData(payload) {
   return {
     type: RESET_ALL_CHART_DATA,
+    payload
+  };
+}
+
+export function resetChartData(payload) {
+  return {
+    type: RESET_CHART_DATA,
     payload
   };
 }

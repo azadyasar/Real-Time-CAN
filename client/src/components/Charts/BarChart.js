@@ -1,9 +1,24 @@
 import React, { Component } from "react";
-import { Line } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 
-export default class LineChart extends Component {
+const barOptions = {
+  responsive: true,
+  maintainAspectRatio: true,
+  scales: {
+    yAxes: [
+      {
+        ticks: {
+          beginAtZero: true
+          // autoSkip: false
+        }
+      }
+    ]
+  }
+};
+
+export default class BarChart extends Component {
   onHookBtnClick = event => {
     if (this.props.isHooked)
       // eslint-disable-next-line no-undef
@@ -20,7 +35,7 @@ export default class LineChart extends Component {
     return (
       <div className="card chart-card">
         <div className="card-header">{this.props.title}</div>
-        <Line data={this.props.data} options={this.props.options} />
+        <Bar data={this.props.data} options={barOptions} />
         <div className="card-body">
           <button
             className={classNames("btn m-2", {
@@ -32,18 +47,20 @@ export default class LineChart extends Component {
           >
             {this.getContinuePauseText(this.props.dataFlowPause)}
           </button>
-          <button
-            className={classNames("btn m-2", {
-              "btn-outline-success": !this.props.isHooked,
-              "btn-outline-danger": this.props.isHooked
-            })}
-            name={this.props.title}
-            // data-toggle="modal"
-            data-target={`#${this.props.target}`}
-            onClick={this.onHookBtnClick}
-          >
-            {this.getHookDetachText(this.props.isHooked)}
-          </button>
+          {this.props.isHookable && (
+            <button
+              className={classNames("btn m-2", {
+                "btn-outline-success": !this.props.isHooked,
+                "btn-outline-danger": this.props.isHooked
+              })}
+              name={this.props.title}
+              // data-toggle="modal"
+              data-target={`#${this.props.target}`}
+              onClick={this.onHookBtnClick}
+            >
+              {this.getHookDetachText(this.props.isHooked)}
+            </button>
+          )}
           <button
             type="button"
             className="btn m-2 btn-outline-primary"
@@ -70,7 +87,7 @@ export default class LineChart extends Component {
   }
 }
 
-LineChart.propTypes = {
+BarChart.propTypes = {
   data: PropTypes.object.isRequired,
   options: PropTypes.object,
   onGraphFlowBtnClick: PropTypes.func.isRequired,
@@ -81,5 +98,6 @@ LineChart.propTypes = {
   onHookBtnClick: PropTypes.func.isRequired,
   graphTarget: PropTypes.string.isRequired,
   isHooked: PropTypes.bool.isRequired,
+  isHookable: PropTypes.bool.isRequired,
   onCleanChartDataBtnClick: PropTypes.func.isRequired
 };

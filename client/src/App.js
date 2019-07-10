@@ -38,7 +38,7 @@ export class ConnectedApp extends Component {
     console.debug("App onMqttMessageReceived: ", topic + " " + message);
     console.log(this.props);
     if (this.props.mqttObserverCallbacks[topic]) {
-      this.props.mqttObserverCallbacks[topic].forEach(cb => cb(message));
+      this.props.mqttObserverCallbacks[topic].forEach(cb => cb(topic, message));
     }
   };
 

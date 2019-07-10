@@ -42,7 +42,16 @@ export default class ScatterChart extends Component {
             data-target={`#${this.props.target}`}
             onClick={this.onHookBtnClick}
           >
-            {this.getContinuePauseText(this.props.dataFlowPause)}
+            {this.getHookDetachText(this.props.isHooked)}
+          </button>
+          <button
+            type="button"
+            className="btn m-2 btn-outline-primary"
+            name={this.props.graphTarget}
+            onClick={this.props.onCleanChartDataBtnClick}
+          >
+            {" "}
+            <i className="fa  fa-trash" name={this.props.graphTarget} />
           </button>
         </div>
       </div>
@@ -72,5 +81,6 @@ ScatterChart.propTypes = {
   target: PropTypes.string.isRequired,
   onHookBtnClick: PropTypes.func.isRequired,
   graphTarget: PropTypes.string.isRequired,
-  isHooked: PropTypes.bool.isRequired
+  isHooked: PropTypes.bool.isRequired,
+  onCleanChartDataBtnClick: PropTypes.func.isRequired
 };
