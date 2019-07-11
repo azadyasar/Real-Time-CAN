@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import moment from "moment";
+import clonedeep from "lodash.clonedeep";
 import "../css/ChartsContainer.css";
 
 import { connect } from "react-redux";
@@ -286,9 +287,20 @@ export class ConnectedChartsContainer extends Component {
   generateFuelData = () => {
     console.debug("generateFuelData");
     if (this.props.chartsDataFlowStatus.fuelDataFlowPause) return;
-    let fuelDataCopy = this.getDoughnutData();
+
     const newFuelDoughnutData = Object.assign({}, this.props.fuelDoughnutData);
-    newFuelDoughnutData.datasets[0].data = fuelDataCopy;
+    let fuelDataCopy = this.getDoughnutData();
+    const newDatasets = [];
+    newFuelDoughnutData.datasets.forEach(ds =>
+      newDatasets.push(
+        Object.assign({}, ds, {
+          data: Object.assign({}, ds.data)
+        })
+      )
+    );
+    newDatasets[0].data = fuelDataCopy;
+
+    newFuelDoughnutData.datasets = newDatasets;
     this.props.updateChartData({
       data: newFuelDoughnutData,
       chartName: "fuelDoughnutData"
@@ -302,7 +314,18 @@ export class ConnectedChartsContainer extends Component {
       {},
       this.props.emissionsScatterData
     );
-    emissionScatterDataCopy.datasets[0].data = this.getScatterDataSet();
+
+    const newDatasets = [];
+    emissionScatterDataCopy.datasets.forEach(ds =>
+      newDatasets.push(
+        Object.assign({}, ds, {
+          data: Object.assign({}, ds.data)
+        })
+      )
+    );
+    newDatasets[0].data = this.getScatterDataSet();
+    emissionScatterDataCopy.datasets = newDatasets;
+
     this.props.updateChartData({
       data: emissionScatterDataCopy,
       chartName: "emissionsScatterData"
