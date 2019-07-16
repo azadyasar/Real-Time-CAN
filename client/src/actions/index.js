@@ -11,7 +11,8 @@ import {
   ADD_OBSERVER,
   SET_CALLBACK_REGISTER,
   REMOVE_OBSERVER,
-  CHANGE_LINE_CHART_RANGE
+  CHANGE_LINE_CHART_RANGE,
+  DELETE_MQTT_MESSAGES
 } from "../constants/action-types";
 
 // MQTT
@@ -122,6 +123,13 @@ export function removeObserver(payload) {
 export function setCallbackRegister(payload) {
   return {
     type: SET_CALLBACK_REGISTER,
+    payload
+  };
+}
+
+export function deleteMqttMessages(payload) {
+  return {
+    type: DELETE_MQTT_MESSAGES,
     payload
   };
 }

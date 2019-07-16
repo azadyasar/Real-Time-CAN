@@ -4,7 +4,8 @@ import {
   SUBSCRIBE_TO_TOPIC,
   SET_IS_CONNECTING,
   ADD_OBSERVER,
-  REMOVE_OBSERVER
+  REMOVE_OBSERVER,
+  DELETE_MQTT_MESSAGES
 } from "../constants/action-types";
 
 const initialState = {
@@ -79,7 +80,10 @@ function mqttReducer(state = initialState, action) {
           [topicName]: removedObserverCallbacks
         }
       });
-
+    case DELETE_MQTT_MESSAGES:
+      return Object.assign({}, state, {
+        mqttReceivedTextMessages: []
+      });
     default:
       return state;
   }

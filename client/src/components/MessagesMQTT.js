@@ -8,7 +8,8 @@ import {
   updateMqttConnection,
   mqttTextMessageReceived,
   subscribeToTopic,
-  setIsConnecting
+  setIsConnecting,
+  deleteMqttMessages
 } from "../actions";
 
 import MqttShutdownModal from "./Modals/MqttShutdownModal";
@@ -24,7 +25,8 @@ const mapDispatchToProps = dispatch => {
     mqttTextMessageReceived: newMqttTextMessage =>
       dispatch(mqttTextMessageReceived(newMqttTextMessage)),
     subscribeToTopic: topic => dispatch(subscribeToTopic(topic)),
-    setIsConnecting: signal => dispatch(setIsConnecting(signal))
+    setIsConnecting: signal => dispatch(setIsConnecting(signal)),
+    deleteMqttMessages: signal => dispatch(deleteMqttMessages(signal))
   };
 };
 
@@ -379,6 +381,11 @@ export class ConnectedMessagesMQTT extends Component {
     }
   };
 
+  onDeleteMqttMessagesBtnClick = event => {
+    event.preventDefault();
+    this.props.deleteMqttMessages(null);
+  };
+
   render() {
     let isConnected = false;
     if (this.props.mqttClient)
@@ -446,7 +453,7 @@ export class ConnectedMessagesMQTT extends Component {
             getMqttBrokerInfoTxt={this.getMqttBrokerInfoTxt}
             getSubscribedTopicsTxt={this.getSubscribedTopicsTxt}
           />
-          <div className="row justify-content-center m-5 w-50">
+          <div className="row justify-content-center m-3 w-50">
             <div className="col-6 m-2" align="center">
               <div className="btn-group">
                 <button
@@ -481,6 +488,14 @@ export class ConnectedMessagesMQTT extends Component {
                   data-target="#mqttPubMsgModal"
                 >
                   Publish
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={this.onDeleteMqttMessagesBtnClick}
+                >
+                  <i className="fa  fa-trash" />
                 </button>
               </div>
             </div>
