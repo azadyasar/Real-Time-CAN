@@ -535,7 +535,7 @@ export class ConnectedChartsContainer extends Component {
             <BarChart
               title="BarChart"
               graphName="mqttBarDataFlowPause"
-              graphTarget="barChart"
+              graphTarget="mqttBarData"
               data={this.props.mqttBarData}
               onGraphFlowBtnClick={this.onGraphFlowBtnClick}
               dataFlowPause={

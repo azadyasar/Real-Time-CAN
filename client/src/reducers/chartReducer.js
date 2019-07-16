@@ -104,7 +104,7 @@ const initialMqttBarData = {
       borderWidth: 1,
       hoverBackgroundColor: "rgba(255,99,132,0.4)",
       hoverBorderColor: "rgba(255,99,132,1)",
-      data: []
+      data: [0, 0, 0]
     }
   ]
 };
@@ -200,7 +200,6 @@ const chartNameInitialDataDict = {
       "$SYS/broker/clients/connected",
       "$SYS/broker/clients/total",
       "$SYS/broker/subscriptions/count"
-      // "$SYS/broker/publish/messages/sent"
     ],
     datasets: [
       {
@@ -210,7 +209,7 @@ const chartNameInitialDataDict = {
         borderWidth: 1,
         hoverBackgroundColor: "rgba(255,99,132,0.4)",
         hoverBorderColor: "rgba(255,99,132,1)",
-        data: []
+        data: [0, 0, 0]
       }
     ]
   }
@@ -252,6 +251,12 @@ function chartReducer(state = initialChartState, action) {
         chartsDataFlowStatus: newChartsDataFlowStatus
       });
     case UPDATE_CHART_DATA:
+      console.debug(
+        "Updating chart data orig: ",
+        state[action.payload.chartName],
+        ", new: ",
+        action.payload.data
+      );
       return Object.assign({}, state, {
         [action.payload.chartName]: action.payload.data
       });

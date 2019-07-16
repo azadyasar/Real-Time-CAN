@@ -43,7 +43,6 @@ function mqttReducer(state = initialState, action) {
         isConnecting: action.payload.isConnecting
       });
     case ADD_OBSERVER:
-      console.log("add observer: ", action);
       let observerCallbacksCopy = [];
       if (state.mqttObserverCallbacks[action.payload.topicName])
         observerCallbacksCopy = state.mqttObserverCallbacks[
