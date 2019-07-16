@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import moment from "moment";
-import clonedeep from "lodash.clonedeep";
 import "../css/ChartsContainer.css";
 
 import { connect } from "react-redux";
