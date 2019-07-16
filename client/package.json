@@ -5,6 +5,7 @@
   "dependencies": {
     "chart.js": "^2.8.0",
     "classnames": "^2.2.6",
+    "ladda": "^2.0.1",
     "lodash.clonedeep": "^4.5.0",
     "mqtt": "^3.0.0",
     "paho-mqtt": "^1.1.0",

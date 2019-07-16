@@ -2,6 +2,7 @@
 import React, { Component } from "react";
 import mqtt from "mqtt";
 import { toast } from "react-toastify";
+import * as Ladda from "ladda";
 
 import { connect } from "react-redux";
 import {
@@ -93,6 +94,8 @@ export class ConnectedMessagesMQTT extends Component {
       this.stopMqttBlink();
       this.cancelMqttConnectionChecker();
     }
+
+    this.l = Ladda.create(document.getElementById("mqttConnectButton"));
     // eslint-disable-next-line no-undef
     $("[data-toggle=popover]").popover({
       html: true,
@@ -458,18 +461,23 @@ export class ConnectedMessagesMQTT extends Component {
               <div className="btn-group">
                 <button
                   type="button"
-                  className="btn btn-outline-primary"
+                  className="btn ladda-button"
+                  data-color="green"
+                  data-style="expand-left"
                   id="mqttConnectButton"
                   data-toggle="modal"
+                  data-size="m"
                   data-target="#mqttServerDetailsModal"
                 >
+                  <span className="ladda-label">Connect</span>
+                  {/*             
                   <span
                     className="spinner-border spinner-border-sm mx-1"
                     role="status"
                     aria-hidden="true"
                     hidden={true}
-                  />
-                  Connect
+                  /> 
+                  Connect*/}
                 </button>
 
                 <button
@@ -619,13 +627,16 @@ export class ConnectedMessagesMQTT extends Component {
     if (connectBtnElement)
       if (shouldShow) connectBtnElement.setAttribute("disabled", true);
       else connectBtnElement.removeAttribute("disabled");
-    spinnerElement = connectBtnElement.getElementsByClassName(
-      "spinner-border"
-    )[0];
-    if (spinnerElement) {
-      if (shouldShow) spinnerElement.removeAttribute("hidden");
-      else spinnerElement.setAttribute("hidden", "true");
-    }
+    // spinnerElement = connectBtnElement.getElementsByClassName(
+    //   "spinner-border"
+    // )[0];
+    if (shouldShow) {
+      this.l.start();
+    } else this.l.stop();
+    // if (spinnerElement) {
+    //   if (shouldShow) spinnerElement.removeAttribute("hidden");
+    //   else spinnerElement.setAttribute("hidden", "true");
+    // }
   }
 }
 

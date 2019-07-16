@@ -7,6 +7,7 @@ import { changeAllGraphFlow } from "./actions";
 
 import "./App.css";
 import "react-toastify/dist/ReactToastify.css";
+import "ladda/dist/ladda.min.css";
 
 import Landing from "./components/Landing";
 import NavBar from "./components/NavBar";
