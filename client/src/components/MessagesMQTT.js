@@ -484,43 +484,6 @@ export class ConnectedMessagesMQTT extends Component {
                 </button>
               </div>
             </div>
-            {/* <div className="col-3 m-2" align="center">
-              <button
-                type="button"
-                className="btn btn-primary"
-                id="mqttConnectButton"
-                data-toggle="modal"
-                data-target="#mqttServerDetailsModal"
-              >
-                <span
-                  className="spinner-border spinner-border-sm mx-1"
-                  role="status"
-                  aria-hidden="true"
-                  hidden={true}
-                />
-                Connect
-              </button>
-            </div>
-            <div className="col-3 m-2" align="center">
-              <button
-                type="button"
-                className="btn btn-primary"
-                data-toggle="modal"
-                data-target="#mqttSubscribeTopics"
-              >
-                Subscribe
-              </button>
-            </div>
-            <div className="col-3 m-2" align="center">
-              <button
-                type="button"
-                className="btn btn-primary"
-                data-toggle="modal"
-                data-target="#mqttPubMsgModal"
-              >
-                Publish
-              </button>
-            </div> */}
           </div>
 
           <div className="row justify-content-center m-5">

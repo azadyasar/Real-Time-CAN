@@ -12,11 +12,13 @@ import {
   addObserver,
   setCallbackRegister,
   subscribeToTopic,
-  removeObserver
+  removeObserver,
+  changeLineChartRange
 } from "../actions";
 
 import HookChartModal from "./Modals/HookChartModal";
 import ChartsToolbar from "./ChartsToolbar";
+import ChartSettingsModal from "./Modals/ChartSettingsModal";
 // Chart Cards
 import LineChart from "./Charts/LineChart";
 import DoughnutChart from "./Charts/DoughnutChart";
@@ -38,7 +40,8 @@ const mapStateToProps = state => {
     mqttBarData: state.chart.mqttBarData,
     chartsDataFlowStatus: state.chart.chartsDataFlowStatus,
     isAllGraphFlowPaused: state.chart.isAllGraphFlowPaused,
-    callbackRegisterStatus: state.chart.callbackRegisterStatus
+    callbackRegisterStatus: state.chart.callbackRegisterStatus,
+    lineChartRange: state.chart.lineChartRange
   };
 };
 
@@ -53,7 +56,9 @@ const mapDispatchToProps = dispatch => {
     setCallbackRegister: (chartName, status) =>
       dispatch(setCallbackRegister({ chartName, status })),
     subscribeToTopic: topic => dispatch(subscribeToTopic(topic)),
-    resetChartData: chartName => dispatch(resetChartData(chartName))
+    resetChartData: chartName => dispatch(resetChartData(chartName)),
+    changeLineChartRange: newLineChartRange =>
+      dispatch(changeLineChartRange(newLineChartRange))
   };
 };
 
@@ -62,7 +67,8 @@ export class ConnectedChartsContainer extends Component {
     super(props);
     console.debug("ChartContainer constructer");
 
-    this.dataLengthLimit = 15;
+    // this.props.lineChartRange = 15;
+    console.log("lineChartRange: ", this.props.lineChartRange);
 
     this.currentObserverTopic = null;
 
@@ -145,19 +151,19 @@ export class ConnectedChartsContainer extends Component {
     );
     let labelsCopy = this.props.speedLineData.labels.concat(moment().format());
 
-    if (tempDataCopy.length > this.dataLengthLimit)
+    if (tempDataCopy.length > this.props.lineChartRange)
       tempDataCopy = tempDataCopy.slice(
-        tempDataCopy.length - this.dataLengthLimit,
+        tempDataCopy.length - this.props.lineChartRange,
         tempDataCopy.length
       );
-    if (humDataCopy.length > this.dataLengthLimit)
+    if (humDataCopy.length > this.props.lineChartRange)
       humDataCopy = humDataCopy.slice(
-        humDataCopy.length - this.dataLengthLimit,
+        humDataCopy.length - this.props.lineChartRange,
         humDataCopy.length
       );
-    if (labelsCopy.length > this.dataLengthLimit)
+    if (labelsCopy.length > this.props.lineChartRange)
       labelsCopy = labelsCopy.slice(
-        labelsCopy.length - this.dataLengthLimit,
+        labelsCopy.length - this.props.lineChartRange,
         labelsCopy.length
       );
 
@@ -188,19 +194,19 @@ export class ConnectedChartsContainer extends Component {
       let labelsCopy = this.props.speedLineData.labels.concat(
         moment().format()
       );
-      if (tempDataCopy.length > this.dataLengthLimit)
+      if (tempDataCopy.length > this.props.lineChartRange)
         tempDataCopy = tempDataCopy.slice(
-          tempDataCopy.length - this.dataLengthLimit,
+          tempDataCopy.length - this.props.lineChartRange,
           tempDataCopy.length
         );
-      if (humDataCopy.length > this.dataLengthLimit)
+      if (humDataCopy.length > this.props.lineChartRange)
         humDataCopy = humDataCopy.slice(
-          humDataCopy.length - this.dataLengthLimit,
+          humDataCopy.length - this.props.lineChartRange,
           humDataCopy.length
         );
-      if (labelsCopy.length > this.dataLengthLimit)
+      if (labelsCopy.length > this.props.lineChartRange)
         labelsCopy = labelsCopy.slice(
-          labelsCopy.length - this.dataLengthLimit,
+          labelsCopy.length - this.props.lineChartRange,
           labelsCopy.length
         );
 
@@ -229,15 +235,15 @@ export class ConnectedChartsContainer extends Component {
       moment().format()
     );
 
-    if (rpmDataDatasetCopy.length > this.dataLengthLimit)
+    if (rpmDataDatasetCopy.length > this.props.lineChartRange)
       rpmDataDatasetCopy = rpmDataDatasetCopy.slice(
-        rpmDataDatasetCopy.length - this.dataLengthLimit,
+        rpmDataDatasetCopy.length - this.props.lineChartRange,
         rpmDataDatasetCopy.length
       );
 
-    if (rmpDataLabelsCopy.length > this.dataLengthLimit)
+    if (rmpDataLabelsCopy.length > this.props.lineChartRange)
       rmpDataLabelsCopy = rmpDataLabelsCopy.slice(
-        rmpDataLabelsCopy.length - this.dataLengthLimit,
+        rmpDataLabelsCopy.length - this.props.lineChartRange,
         rmpDataLabelsCopy.length
       );
 
@@ -258,15 +264,15 @@ export class ConnectedChartsContainer extends Component {
       let rmpDataLabelsCopy = this.props.rpmLineData.labels.concat(
         moment().format()
       );
-      if (rpmDataDatasetCopy.length > this.dataLengthLimit)
+      if (rpmDataDatasetCopy.length > this.props.lineChartRange)
         rpmDataDatasetCopy = rpmDataDatasetCopy.slice(
-          rpmDataDatasetCopy.length - this.dataLengthLimit,
+          rpmDataDatasetCopy.length - this.props.lineChartRange,
           rpmDataDatasetCopy.length
         );
 
-      if (rmpDataLabelsCopy.length > this.dataLengthLimit)
+      if (rmpDataLabelsCopy.length > this.props.lineChartRange)
         rmpDataLabelsCopy = rmpDataLabelsCopy.slice(
-          rmpDataLabelsCopy.length - this.dataLengthLimit,
+          rmpDataLabelsCopy.length - this.props.lineChartRange,
           rmpDataLabelsCopy.length
         );
       const rpmDataCopy = Object.assign({}, this.props.rpmLineData);
@@ -447,6 +453,12 @@ export class ConnectedChartsContainer extends Component {
     this.observerChartName = null;
   };
 
+  onChartSettingsApply = newSettings => {
+    toast.info("Settings changed.");
+    this.props.changeLineChartRange(newSettings.lineChartRange);
+    // LAUNCH SETTINGS MODAL
+  };
+
   mqttCb(msg) {
     console.log("Observer received: " + msg.toString());
   }
@@ -458,10 +470,16 @@ export class ConnectedChartsContainer extends Component {
           pauseAllGraphsFlow={this.props.isAllGraphFlowPaused}
           onStartAllGraphFlowBtnClick={this.onStartAllGraphFlowBtnClick}
           onCleanAllChartDataBtnClick={this.onCleanAllChartDataBtnClick}
+          chartSettingsModalId="chartSettingsModalId"
         />
         <HookChartModal
           modalId="hookChartModalId"
           onApplyHookBtnSubmit={this.onHookChartDataSubmit}
+        />
+        <ChartSettingsModal
+          modalId="chartSettingsModalId"
+          currentLineChartRange={this.props.lineChartRange}
+          onApplySettingsSubmit={this.onChartSettingsApply}
         />
         <div className="row  justify-content-center">
           {/* Speed Graph */}

@@ -41,6 +41,15 @@ export default function ChartsToolbar(props) {
         >
           <i className="fa fa-2x fa-trash" />
         </button>
+        <button
+          type="button"
+          className="btn btn-outline-primary"
+          data-toggle="modal"
+          data-target={`#${props.chartSettingsModalId}`}
+          onClick={props.onSettingsBtnClick}
+        >
+          <i className="fa fa-2x fa-cog" />
+        </button>
       </div>
     </div>
   );
@@ -49,5 +58,6 @@ export default function ChartsToolbar(props) {
 ChartsToolbar.propTypes = {
   pauseAllGraphsFlow: PropTypes.bool.isRequired,
   onStartAllGraphFlowBtnClick: PropTypes.func.isRequired,
-  onCleanAllChartDataBtnClick: PropTypes.func.isRequired
+  onCleanAllChartDataBtnClick: PropTypes.func.isRequired,
+  chartSettingsModalId: PropTypes.string.isRequired
 };

@@ -10,7 +10,8 @@ import {
   SET_IS_CONNECTING,
   ADD_OBSERVER,
   SET_CALLBACK_REGISTER,
-  REMOVE_OBSERVER
+  REMOVE_OBSERVER,
+  CHANGE_LINE_CHART_RANGE
 } from "../constants/action-types";
 
 // MQTT
@@ -83,6 +84,13 @@ export function resetAllChartData(payload) {
 export function resetChartData(payload) {
   return {
     type: RESET_CHART_DATA,
+    payload
+  };
+}
+
+export function changeLineChartRange(payload) {
+  return {
+    type: CHANGE_LINE_CHART_RANGE,
     payload
   };
 }

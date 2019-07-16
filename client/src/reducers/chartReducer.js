@@ -4,7 +4,8 @@ import {
   CHANGE_GRAPH_FLOW,
   RESET_ALL_CHART_DATA,
   RESET_CHART_DATA,
-  SET_CALLBACK_REGISTER
+  SET_CALLBACK_REGISTER,
+  CHANGE_LINE_CHART_RANGE
 } from "../constants/action-types";
 
 const initialLineData = {
@@ -222,6 +223,7 @@ const initialChartState = {
   fuelDoughnutData: Object.assign({}, initialFuelDoughnutData),
   emissionsScatterData: Object.assign({}, initialEmissionScatterData),
   mqttBarData: Object.assign({}, initialMqttBarData),
+  lineChartRange: 5,
   chartsDataFlowStatus: {
     speedDataFlowPause: true,
     rpmDataFlowPause: true,
@@ -293,6 +295,10 @@ function chartReducer(state = initialChartState, action) {
           ...state.callbackRegisterStatus,
           [action.payload.chartName]: action.payload.status
         }
+      });
+    case CHANGE_LINE_CHART_RANGE:
+      return Object.assign({}, state, {
+        lineChartRange: action.payload
       });
     default:
       return state;
