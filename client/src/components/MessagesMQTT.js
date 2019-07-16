@@ -44,8 +44,7 @@ const mapStateToProps = state => {
       : false,
     isConnecting: state.mqtt.isConnecting,
     mqttReceivedTextMessages: state.mqtt.mqttReceivedTextMessages,
-    subscribedTopics: state.mqtt.subscribedTopics,
-    mqttObserverCallbacks: state.mqtt.mqttObserverCallbacks
+    subscribedTopics: state.mqtt.subscribedTopics
   };
 };
 
@@ -54,7 +53,6 @@ export class ConnectedMessagesMQTT extends Component {
     super(props);
     console.debug("MessagesMQTT constructor");
     this.state = {
-      mqttObserverCallbacks: props.mqttObserverCallbacks,
       isConnecting: false
     };
 
@@ -76,8 +74,11 @@ export class ConnectedMessagesMQTT extends Component {
   componentDidMount() {
     console.debug("MessagesMQTT mounted");
 
-    this.setState({
-      mqttObserverCallbacks: this.props.mqttObserverCallbacks
+    this.l = Ladda.create(document.getElementById("mqttConnectButton"));
+    // eslint-disable-next-line no-undef
+    $("[data-toggle=popover]").popover({
+      html: true,
+      "white-space": "pre-wrap"
     });
 
     if (this.props.isConnecting) {
@@ -94,22 +95,11 @@ export class ConnectedMessagesMQTT extends Component {
       this.stopMqttBlink();
       this.cancelMqttConnectionChecker();
     }
-
-    this.l = Ladda.create(document.getElementById("mqttConnectButton"));
-    // eslint-disable-next-line no-undef
-    $("[data-toggle=popover]").popover({
-      html: true,
-      "white-space": "pre-wrap"
-    });
   }
 
   componentWillReceiveProps(nextProps) {
     console.debug("MessagesMQTT received props: ", nextProps);
     this.mqttClient = nextProps.mqttClient;
-
-    this.setState({
-      mqttObserverCallbacks: nextProps.mqttObserverCallbacks
-    });
 
     if (nextProps.isConnecting) {
       if (!this.mqttConnectingBlinkInterval) {
@@ -456,8 +446,8 @@ export class ConnectedMessagesMQTT extends Component {
             getMqttBrokerInfoTxt={this.getMqttBrokerInfoTxt}
             getSubscribedTopicsTxt={this.getSubscribedTopicsTxt}
           />
-          <div className="row justify-content-center m-3 w-50">
-            <div className="col-6 m-2" align="center">
+          <div className="row justify-content-center m-3 ">
+            <div className="col-12 m-2" align="center">
               <div className="btn-group">
                 <button
                   type="button"
@@ -623,20 +613,11 @@ export class ConnectedMessagesMQTT extends Component {
 
   checkConnectionSpinner(shouldShow) {
     const connectBtnElement = document.getElementById("mqttConnectButton");
-    let spinnerElement;
     if (connectBtnElement)
       if (shouldShow) connectBtnElement.setAttribute("disabled", true);
       else connectBtnElement.removeAttribute("disabled");
-    // spinnerElement = connectBtnElement.getElementsByClassName(
-    //   "spinner-border"
-    // )[0];
-    if (shouldShow) {
-      this.l.start();
-    } else this.l.stop();
-    // if (spinnerElement) {
-    //   if (shouldShow) spinnerElement.removeAttribute("hidden");
-    //   else spinnerElement.setAttribute("hidden", "true");
-    // }
+    if (shouldShow) this.l.start();
+    else this.l.stop();
   }
 }
 

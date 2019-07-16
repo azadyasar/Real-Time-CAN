@@ -222,7 +222,7 @@ const initialChartState = {
   fuelDoughnutData: Object.assign({}, initialFuelDoughnutData),
   emissionsScatterData: Object.assign({}, initialEmissionScatterData),
   mqttBarData: Object.assign({}, initialMqttBarData),
-  lineChartRange: 5,
+  lineChartRange: 10,
   chartsDataFlowStatus: {
     speedDataFlowPause: true,
     rpmDataFlowPause: true,

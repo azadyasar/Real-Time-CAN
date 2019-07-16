@@ -456,7 +456,8 @@ export class ConnectedChartsContainer extends Component {
   onChartSettingsApply = newSettings => {
     toast.info("Settings changed.");
     this.props.changeLineChartRange(newSettings.lineChartRange);
-    // LAUNCH SETTINGS MODAL
+
+    this.props.updateChartData(this.props.speedLineData);
   };
 
   mqttCb(msg) {
@@ -483,7 +484,10 @@ export class ConnectedChartsContainer extends Component {
         />
         <div className="row  justify-content-center">
           {/* Speed Graph */}
-          <div className="col-xl-4  col-md-5 mx-2 my-4 h-100" align="center">
+          <div
+            className="col-xl-4 col-lg-7  col-md-8 mx-2 my-4 h-100"
+            align="center"
+          >
             <LineChart
               title="Speed"
               graphName="speedDataFlowPause"
@@ -499,7 +503,10 @@ export class ConnectedChartsContainer extends Component {
             />
           </div>
           {/* RPM Graph */}
-          <div className="col-xl-4  col-md-5 mx-2 my-4 h-100" align="center">
+          <div
+            className="col-xl-4 col-lg-7  col-md-8 mx-2 my-4 h-100"
+            align="center"
+          >
             <LineChart
               title="RPM"
               graphName="rpmDataFlowPause"
@@ -515,7 +522,10 @@ export class ConnectedChartsContainer extends Component {
             />
           </div>
           {/* Doughnut Chart */}
-          <div className="col-xl-4  col-md-5 mx-2 my-4 h-100" align="center">
+          <div
+            className="col-xl-4 col-lg-7 col-lg-5 col-md-8 mx-2 my-4 h-100"
+            align="center"
+          >
             <DoughnutChart
               title="Fuel Usage"
               graphName="fuelDataFlowPause"
@@ -531,9 +541,12 @@ export class ConnectedChartsContainer extends Component {
             />
           </div>
           {/* Bar Chart */}
-          <div className="col-xl-4  col-md-5 mx-2 my-4 h-100" align="center">
+          <div
+            className="col-xl-4 col-lg-7  col-md-8 mx-2 my-4 h-100"
+            align="center"
+          >
             <BarChart
-              title="BarChart"
+              title="MQTT Broker Info"
               graphName="mqttBarDataFlowPause"
               graphTarget="mqttBarData"
               data={this.props.mqttBarData}
@@ -549,7 +562,10 @@ export class ConnectedChartsContainer extends Component {
             />
           </div>
           {/* Scatter Chart (Emissions) */}
-          <div className="col-xl-4  col-md-5 mx-2 my-4 h-100" align="center">
+          <div
+            className="col-xl-4 col-lg-7  col-md-8 mx-2 my-4 h-100"
+            align="center"
+          >
             <ScatterChart
               title="Emission"
               graphName="emissionDataFlowPause"
