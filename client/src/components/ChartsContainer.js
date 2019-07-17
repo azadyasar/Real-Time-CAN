@@ -485,7 +485,7 @@ export class ConnectedChartsContainer extends Component {
         <div className="row  justify-content-center">
           {/* Speed Graph */}
           <div
-            className="col-xl-4 col-lg-7  col-md-8 mx-2 my-4 h-100"
+            className="col-xl-4 col-lg-5  col-md-8 mx-1 my-2 mt-4 h-100"
             align="center"
           >
             <LineChart
@@ -504,7 +504,7 @@ export class ConnectedChartsContainer extends Component {
           </div>
           {/* RPM Graph */}
           <div
-            className="col-xl-4 col-lg-7  col-md-8 mx-2 my-4 h-100"
+            className="col-xl-4 col-lg-5 col-md-8 mx-1 my-2 mt-4 h-100"
             align="center"
           >
             <LineChart
@@ -521,9 +521,12 @@ export class ConnectedChartsContainer extends Component {
               onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
             />
           </div>
+        </div>
+        <div className="row  justify-content-center">
           {/* Doughnut Chart */}
           <div
-            className="col-xl-4 col-lg-7 col-lg-5 col-md-8 mx-2 my-4 h-100"
+            className="col-xl-3 col-lg-4 col-md-8 mt-4 px-2
+              h-100"
             align="center"
           >
             <DoughnutChart
@@ -542,7 +545,8 @@ export class ConnectedChartsContainer extends Component {
           </div>
           {/* Bar Chart */}
           <div
-            className="col-xl-4 col-lg-7  col-md-8 mx-2 my-4 h-100"
+            className="col-xl-3 col-lg-4  col-md-8 mt-4 px-2
+             h-100"
             align="center"
           >
             <BarChart
@@ -563,7 +567,8 @@ export class ConnectedChartsContainer extends Component {
           </div>
           {/* Scatter Chart (Emissions) */}
           <div
-            className="col-xl-4 col-lg-7  col-md-8 mx-2 my-4 h-100"
+            className="col-xl-3 col-lg-4  col-md-8 mt-4 px-2
+             h-100 "
             align="center"
           >
             <ScatterChart

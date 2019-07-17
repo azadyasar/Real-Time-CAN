@@ -13,7 +13,7 @@ export default class ChartSettingsModal extends Component {
     console.log(event);
     console.log(event.target);
     this.setState({
-      lineChartRange: event.target.value
+      lineChartRange: Number(event.target.value)
     });
   };
 
