@@ -35,8 +35,11 @@ export default class BarChart extends Component {
     return (
       <div className="card chart-card">
         <div className="card-header">{this.props.title}</div>
-        <Bar data={this.props.data} options={barOptions} />
-        <div className="card-body">
+
+        <div className="card-body p-0 pt-2">
+          <Bar data={this.props.data} options={barOptions} />
+        </div>
+        <div className="card-footer p-0 py-1">
           <button
             className={classNames("btn m-2", {
               "btn-outline-primary": this.props.dataFlowPause,

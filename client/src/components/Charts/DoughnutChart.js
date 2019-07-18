@@ -20,11 +20,14 @@ export default class DoughnutChart extends Component {
     return (
       <div className="card chart-card">
         <div className="card-header">{this.props.title}</div>
-        <Doughnut
-          data={this.props.data}
-          options={{ rotation: 1 * Math.PI, circumference: 1 * Math.PI }}
-        />
-        <div className="card-body">
+
+        <div className="card-body p-0 pt-2">
+          <Doughnut
+            data={this.props.data}
+            options={{ rotation: 1 * Math.PI, circumference: 1 * Math.PI }}
+          />
+        </div>
+        <div className="card-footer p-0 py-1">
           <button
             className={classNames("btn m-2", {
               "btn-outline-primary": this.props.dataFlowPause,

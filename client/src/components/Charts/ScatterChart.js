@@ -20,8 +20,11 @@ export default class ScatterChart extends Component {
     return (
       <div className="card chart-card">
         <div className="card-header">{this.props.title}</div>
-        <Scatter data={this.props.data} />
-        <div className="card-body">
+
+        <div className="card-body p-0 pt-2">
+          <Scatter data={this.props.data} />
+        </div>
+        <div className="card-footer p-0 py-1">
           <button
             className={classNames("btn m-2", {
               "btn-outline-primary": this.props.dataFlowPause,

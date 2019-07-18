@@ -16,7 +16,8 @@ import {
   setCallbackRegister,
   subscribeToTopic,
   removeObserver,
-  changeLineChartRange
+  changeLineChartRange,
+  addRouteCoord
 } from "../actions";
 
 import HookChartModal from "./Modals/HookChartModal";
@@ -27,10 +28,9 @@ import LineChart from "./Charts/LineChart";
 import DoughnutChart from "./Charts/DoughnutChart";
 import ScatterChart from "./Charts/ScatterChart";
 import BarChart from "./Charts/BarChart";
+import MapChart from "./Charts/MapChart";
 const turf = require("@turf/turf");
 
-const MAPBOX_ACCESS_TOKEN =
-  "pk.eyJ1IjoiYXphZHlhc2FyIiwiYSI6ImNqeTdhMnhvbDBvc2ozY3EweHBnMXhhcTAifQ.eD4ZHxvtoY49nVcJ_K8gPg";
 const istCoord = {
   latitude: 40.967905,
   longitude: 29.103301
@@ -51,7 +51,8 @@ const mapStateToProps = state => {
     chartsDataFlowStatus: state.chart.chartsDataFlowStatus,
     isAllGraphFlowPaused: state.chart.isAllGraphFlowPaused,
     callbackRegisterStatus: state.chart.callbackRegisterStatus,
-    lineChartRange: state.chart.lineChartRange
+    lineChartRange: state.chart.lineChartRange,
+    gpsRouteCoords: state.chart.gpsRouteCoords
   };
 };
 
@@ -68,7 +69,8 @@ const mapDispatchToProps = dispatch => {
     subscribeToTopic: topic => dispatch(subscribeToTopic(topic)),
     resetChartData: chartName => dispatch(resetChartData(chartName)),
     changeLineChartRange: newLineChartRange =>
-      dispatch(changeLineChartRange(newLineChartRange))
+      dispatch(changeLineChartRange(newLineChartRange)),
+    addRouteCoord: coord => dispatch(addRouteCoord(coord))
   };
 };
 
@@ -121,10 +123,10 @@ export class ConnectedChartsContainer extends Component {
         pause: "mqttBarDataFlowPause",
         generatorInterval: null
       },
-      mapRouteLine: {
+      gpsRouteCoords: {
         generator: this.generateRouteData,
         callback: () => console.error("Implement me!!"),
-        pause: "mqttBarDataFlowPause",
+        pause: "gpsRouteCoordsFlowPause",
         generatorInterval: null
       }
     };
@@ -398,19 +400,20 @@ export class ConnectedChartsContainer extends Component {
   };
 
   generateRouteData = () => {
-    if (this.props.chartsDataFlowStatus.emissionDataFlowPause) return;
+    if (this.props.chartsDataFlowStatus.gpsRouteCoordsFlowPause) return;
 
     const newLong =
-      this.routeCoords[this.routeCoords.length - 1][0] +
+      this.props.gpsRouteCoords[this.props.gpsRouteCoords.length - 1][0] +
       (Math.random() - 0.2) / 50;
     const newLat =
-      this.routeCoords[this.routeCoords.length - 1][1] +
+      this.props.gpsRouteCoords[this.props.gpsRouteCoords.length - 1][1] +
       (Math.random() - 0.2) / 100;
-    this.routeCoords.push([newLong, newLat]);
+    this.props.addRouteCoord([newLong, newLat]);
+    /*   this.routeCoords.push([newLong, newLat]);
     this.routeCoordsGEO = turf.lineString(this.routeCoords);
     this.map.getSource("route-source").setData(this.routeCoordsGEO);
     this.currentLocationMarker.setLngLat([newLong, newLat]);
-    this.currentLocationMarker.addTo(this.map);
+    this.currentLocationMarker.addTo(this.map); */
   };
 
   componentDidMount() {
@@ -428,7 +431,7 @@ export class ConnectedChartsContainer extends Component {
       this.props.subscribeToTopic(topic);
     });
 
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+    /* mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
     this.map = new mapboxgl.Map({
       container: "map",
       style: "mapbox://styles/mapbox/streets-v10",
@@ -439,7 +442,7 @@ export class ConnectedChartsContainer extends Component {
     });
 
     this.routeCoords.push([istCoord.longitude, istCoord.latitude]);
-    this.map.on("style.load", this.onMapStyleLoad);
+    this.map.on("style.load", this.onMapStyleLoad); */
   }
 
   componentWillReceiveProps(newProps) {
@@ -458,7 +461,7 @@ export class ConnectedChartsContainer extends Component {
     });
   }
 
-  onMapStyleLoad = event => {
+  /*   onMapStyleLoad = event => {
     console.debug("onMapStyleLoad ", event);
     this.map.addSource("route-source", {
       type: "geojson",
@@ -487,7 +490,7 @@ export class ConnectedChartsContainer extends Component {
     if (this.currentLocationMarker) {
       this.currentLocationMarker.addTo(this.map);
     }
-  };
+  }; */
 
   onGraphFlowBtnClick = event => {
     console.log(event.target);
@@ -608,10 +611,19 @@ export class ConnectedChartsContainer extends Component {
         </div>
         <div className="row mt-4 mx-4">
           <div className="col-6 " align="center">
-            <div
-              id="map"
-              ref={el => (this.mapContainer = el)}
-              className="map"
+            <MapChart
+              title="GPS"
+              graphName="gpsRouteCoordsFlowPause"
+              graphTarget="gpsRouteCoords"
+              routeCoords={this.props.gpsRouteCoords}
+              onGraphFlowBtnClick={this.onGraphFlowBtnClick}
+              dataFlowPause={
+                this.props.chartsDataFlowStatus.gpsRouteCoordsFlowPause
+              }
+              onHookBtnClick={this.onHookChartDataBtnClick}
+              isHooked={this.props.callbackRegisterStatus["gpsRouteCoords"]}
+              target="hookChartModalId"
+              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
             />
           </div>
           <div className="col-6" align="center">

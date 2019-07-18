@@ -5,7 +5,8 @@ import {
   RESET_ALL_CHART_DATA,
   RESET_CHART_DATA,
   SET_CALLBACK_REGISTER,
-  CHANGE_LINE_CHART_RANGE
+  CHANGE_LINE_CHART_RANGE,
+  ADD_ROUTE_COORD
 } from "../constants/action-types";
 
 const initialLineData = {
@@ -222,20 +223,23 @@ const initialChartState = {
   fuelDoughnutData: Object.assign({}, initialFuelDoughnutData),
   emissionsScatterData: Object.assign({}, initialEmissionScatterData),
   mqttBarData: Object.assign({}, initialMqttBarData),
+  gpsRouteCoords: [[29.103301, 40.967905]],
   lineChartRange: 10,
   chartsDataFlowStatus: {
     speedDataFlowPause: true,
     rpmDataFlowPause: true,
     fuelDataFlowPause: true,
     emissionDataFlowPause: true,
-    mqttBarDataFlowPause: true
+    mqttBarDataFlowPause: true,
+    gpsRouteCoordsFlowPause: true
   },
   callbackRegisterStatus: {
     speedLineData: false,
     rpmLineData: false,
     fuelDoughnutData: false,
     emissionsScatterData: false,
-    mqttBarData: true
+    mqttBarData: true,
+    gpsRouteCoords: false
   }
 };
 
@@ -304,6 +308,11 @@ function chartReducer(state = initialChartState, action) {
     case CHANGE_LINE_CHART_RANGE:
       return Object.assign({}, state, {
         lineChartRange: action.payload
+      });
+    case ADD_ROUTE_COORD:
+      console.debug("Adding new coord: ", action.payload);
+      return Object.assign({}, state, {
+        gpsRouteCoords: state.gpsRouteCoords.concat([action.payload])
       });
     default:
       return state;

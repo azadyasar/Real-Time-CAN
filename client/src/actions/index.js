@@ -12,7 +12,8 @@ import {
   SET_CALLBACK_REGISTER,
   REMOVE_OBSERVER,
   CHANGE_LINE_CHART_RANGE,
-  DELETE_MQTT_MESSAGES
+  DELETE_MQTT_MESSAGES,
+  ADD_ROUTE_COORD
 } from "../constants/action-types";
 
 // MQTT
@@ -130,6 +131,13 @@ export function setCallbackRegister(payload) {
 export function deleteMqttMessages(payload) {
   return {
     type: DELETE_MQTT_MESSAGES,
+    payload
+  };
+}
+
+export function addRouteCoord(payload) {
+  return {
+    type: ADD_ROUTE_COORD,
     payload
   };
 }
