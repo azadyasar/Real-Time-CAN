@@ -10,17 +10,17 @@ export default function ChartsToolbar(props) {
   });
   return (
     <div className="toolbar">
-      <div className="btn-group-vertical">
-        <button type="button" className="btn btn-outline-primary">
+      <div className="btn-group">
+        <button type="button" className="btn btn-outline-primary toolbar-btn">
           <i className="fa fa-2x fa-car" />
         </button>
-        <button type="button" className="btn btn-outline-primary">
+        <button type="button" className="btn btn-outline-primary toolbar-btn">
           <i className="fa fa-2x fa-cloud" />
         </button>
         <button
-          className="btn btn-outline-primary"
+          className="btn btn-outline-primary toolbar-btn"
           data-toggle="tooltip"
-          data-placement="left"
+          data-placement="bottom"
           title="Toggle data generation"
           onClick={props.onStartAllGraphFlowBtnClick}
         >
@@ -33,9 +33,9 @@ export default function ChartsToolbar(props) {
         </button>
         <button
           type="button"
-          className="btn btn-outline-primary"
+          className="btn btn-outline-primary toolbar-btn"
           data-toggle="tooltip"
-          data-placement="left"
+          data-placement="bottom"
           title="Reset graph data"
           onClick={props.onCleanAllChartDataBtnClick}
         >
@@ -43,7 +43,7 @@ export default function ChartsToolbar(props) {
         </button>
         <button
           type="button"
-          className="btn btn-outline-primary"
+          className="btn btn-outline-primary toolbar-btn"
           data-toggle="modal"
           data-target={`#${props.chartSettingsModalId}`}
           onClick={props.onSettingsBtnClick}

@@ -1,11 +1,11 @@
 .toolbar {
-  background: #c2b8b8;
+  background: #f1f1f1;
   display: flex;
   flex-direction: column;
   align-items: center;
   z-index: 9999;
   position: fixed;
-  top: 75px;
+  top: 5px;
   right: 0;
 }
 
@@ -38,6 +38,41 @@ button > * {
 
 .line-chart-range {
   width: 85%;
+}
+
+.map {
+  border: 1px solid #fff;
+  position: relative;
+  height: 50vh;
+}
+
+.fa-map-marker {
+  padding-bottom: 1.5%;
+}
+
+.no-pm {
+  padding: 0;
+  margin: 0;
+}
+
+.card-header {
+  padding: 0.2rem;
+  background-color: #c4d8d8;
+}
+
+.mapboxgl-map {
+  border-style: solid;
+  border-width: 0.5px;
+  border-color: #c4d8d8;
+}
+
+.toolbar-btn {
+  color: #497272;
+  border-color: #4b7956;
+}
+
+.toolbar-btn:hover {
+  background-color: #366161;
 }
 
 /* TOAST CSS */

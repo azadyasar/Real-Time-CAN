@@ -1,6 +1,9 @@
 import React, { Component } from "react";
 import moment from "moment";
+import { toast } from "react-toastify";
+import mapboxgl from "mapbox-gl";
 import "../css/ChartsContainer.css";
+import "mapbox-gl/src/css/mapbox-gl.css";
 
 import { connect } from "react-redux";
 import {
@@ -24,7 +27,14 @@ import LineChart from "./Charts/LineChart";
 import DoughnutChart from "./Charts/DoughnutChart";
 import ScatterChart from "./Charts/ScatterChart";
 import BarChart from "./Charts/BarChart";
-import { toast } from "react-toastify";
+const turf = require("@turf/turf");
+
+const MAPBOX_ACCESS_TOKEN =
+  "pk.eyJ1IjoiYXphZHlhc2FyIiwiYSI6ImNqeTdhMnhvbDBvc2ozY3EweHBnMXhhcTAifQ.eD4ZHxvtoY49nVcJ_K8gPg";
+const istCoord = {
+  latitude: 40.967905,
+  longitude: 29.103301
+};
 
 // eslint-disable-next-line
 function getRandomInt(min, max) {
@@ -67,8 +77,16 @@ export class ConnectedChartsContainer extends Component {
     super(props);
     console.debug("ChartContainer constructer");
 
-    // this.props.lineChartRange = 15;
-    console.log("lineChartRange: ", this.props.lineChartRange);
+    this.routeCoordsGEO = null;
+    this.routeCoords = [];
+    this.currentLocationMarkerEl = document.createElement("i");
+    this.currentLocationMarkerEl.className = "fa fa-2x fa-map-marker";
+    this.currentLocationMarker = new mapboxgl.Marker(
+      this.currentLocationMarkerEl,
+      {
+        draggable: false
+      }
+    ).setLngLat({ lng: istCoord.longitude, lat: istCoord.latitude });
 
     this.currentObserverTopic = null;
 
@@ -100,6 +118,12 @@ export class ConnectedChartsContainer extends Component {
       mqttBarData: {
         generator: this.generateMqttBarData,
         callback: this.callbackMqttBarData,
+        pause: "mqttBarDataFlowPause",
+        generatorInterval: null
+      },
+      mapRouteLine: {
+        generator: this.generateRouteData,
+        callback: () => console.error("Implement me!!"),
         pause: "mqttBarDataFlowPause",
         generatorInterval: null
       }
@@ -373,6 +397,22 @@ export class ConnectedChartsContainer extends Component {
     });
   };
 
+  generateRouteData = () => {
+    if (this.props.chartsDataFlowStatus.emissionDataFlowPause) return;
+
+    const newLong =
+      this.routeCoords[this.routeCoords.length - 1][0] +
+      (Math.random() - 0.2) / 50;
+    const newLat =
+      this.routeCoords[this.routeCoords.length - 1][1] +
+      (Math.random() - 0.2) / 100;
+    this.routeCoords.push([newLong, newLat]);
+    this.routeCoordsGEO = turf.lineString(this.routeCoords);
+    this.map.getSource("route-source").setData(this.routeCoordsGEO);
+    this.currentLocationMarker.setLngLat([newLong, newLat]);
+    this.currentLocationMarker.addTo(this.map);
+  };
+
   componentDidMount() {
     console.debug("ChartContainer did mount");
     Object.keys(this.graphGeneratorAttributes).forEach(key => {
@@ -387,6 +427,19 @@ export class ConnectedChartsContainer extends Component {
       });
       this.props.subscribeToTopic(topic);
     });
+
+    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+    this.map = new mapboxgl.Map({
+      container: "map",
+      style: "mapbox://styles/mapbox/streets-v10",
+      center: [istCoord.longitude, istCoord.latitude],
+      width: window.innerWidth,
+      height: window.innerHeight,
+      zoom: 10
+    });
+
+    this.routeCoords.push([istCoord.longitude, istCoord.latitude]);
+    this.map.on("style.load", this.onMapStyleLoad);
   }
 
   componentWillReceiveProps(newProps) {
@@ -404,6 +457,37 @@ export class ConnectedChartsContainer extends Component {
       }
     });
   }
+
+  onMapStyleLoad = event => {
+    console.debug("onMapStyleLoad ", event);
+    this.map.addSource("route-source", {
+      type: "geojson",
+      data: this.routeCoordsGEO
+    });
+
+    this.map.addLayer({
+      id: "mainRoute",
+      type: "line",
+      source: "route-source",
+      layout: {
+        "line-join": "round",
+        "line-cap": "round"
+      },
+      paint: {
+        "line-color": "#179dbe",
+        "line-width": 4
+      }
+    });
+
+    if (this.routeCoords.length > 2) {
+      this.routeCoordsGEO = turf.lineString(this.routeCoords);
+      this.map.getSource("route-source").setData(this.routeCoordsGEO);
+    }
+
+    if (this.currentLocationMarker) {
+      this.currentLocationMarker.addTo(this.map);
+    }
+  };
 
   onGraphFlowBtnClick = event => {
     console.log(event.target);
@@ -466,7 +550,7 @@ export class ConnectedChartsContainer extends Component {
 
   render() {
     return (
-      <div className="charts-container ">
+      <div className="container-fluid no-pm">
         <ChartsToolbar
           pauseAllGraphsFlow={this.props.isAllGraphFlowPaused}
           onStartAllGraphFlowBtnClick={this.onStartAllGraphFlowBtnClick}
@@ -482,111 +566,129 @@ export class ConnectedChartsContainer extends Component {
           currentLineChartRange={this.props.lineChartRange}
           onApplySettingsSubmit={this.onChartSettingsApply}
         />
-        <div className="row  justify-content-center">
-          {/* Speed Graph */}
-          <div
-            className="col-xl-4 col-lg-5  col-md-8 mx-1 my-2 mt-4 h-100"
-            align="center"
-          >
-            <LineChart
-              title="Speed"
-              graphName="speedDataFlowPause"
-              graphTarget="speedLineData"
-              data={this.props.speedLineData}
-              options={this.lineGraphOptions}
-              onGraphFlowBtnClick={this.onGraphFlowBtnClick}
-              dataFlowPause={this.props.chartsDataFlowStatus.speedDataFlowPause}
-              onHookBtnClick={this.onHookChartDataBtnClick}
-              target="hookChartModalId"
-              isHooked={this.props.callbackRegisterStatus["speedLineData"]}
-              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
-            />
+        <div className="row mt-4 mx-4">
+          <div className="col-6" align="center">
+            <div className="">
+              <LineChart
+                title="Speed"
+                graphName="speedDataFlowPause"
+                graphTarget="speedLineData"
+                data={this.props.speedLineData}
+                options={this.lineGraphOptions}
+                onGraphFlowBtnClick={this.onGraphFlowBtnClick}
+                dataFlowPause={
+                  this.props.chartsDataFlowStatus.speedDataFlowPause
+                }
+                onHookBtnClick={this.onHookChartDataBtnClick}
+                target="hookChartModalId"
+                isHooked={this.props.callbackRegisterStatus["speedLineData"]}
+                onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
+              />
+            </div>
           </div>
-          {/* RPM Graph */}
-          <div
-            className="col-xl-4 col-lg-5 col-md-8 mx-1 my-2 mt-4 h-100"
-            align="center"
-          >
-            <LineChart
-              title="RPM"
-              graphName="rpmDataFlowPause"
-              graphTarget="rpmLineData"
-              data={this.props.rpmLineData}
-              options={Object.assign({}, this.lineGraphOptions, { fill: true })}
-              onGraphFlowBtnClick={this.onGraphFlowBtnClick}
-              dataFlowPause={this.props.chartsDataFlowStatus.rpmDataFlowPause}
-              onHookBtnClick={this.onHookChartDataBtnClick}
-              target="hookChartModalId"
-              isHooked={this.props.callbackRegisterStatus["rpmLineData"]}
-              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
-            />
+          <div className="col-6 " align="center">
+            <div className="">
+              <LineChart
+                title="RPM"
+                graphName="rpmDataFlowPause"
+                graphTarget="rpmLineData"
+                data={this.props.rpmLineData}
+                options={Object.assign({}, this.lineGraphOptions, {
+                  fill: true
+                })}
+                onGraphFlowBtnClick={this.onGraphFlowBtnClick}
+                dataFlowPause={this.props.chartsDataFlowStatus.rpmDataFlowPause}
+                onHookBtnClick={this.onHookChartDataBtnClick}
+                target="hookChartModalId"
+                isHooked={this.props.callbackRegisterStatus["rpmLineData"]}
+                onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
+              />
+            </div>
           </div>
         </div>
-        <div className="row  justify-content-center">
-          {/* Doughnut Chart */}
-          <div
-            className="col-xl-3 col-lg-4 col-md-8 mt-4 px-2
-              h-100"
-            align="center"
-          >
-            <DoughnutChart
-              title="Fuel Usage"
-              graphName="fuelDataFlowPause"
-              graphTarget="fuelDoughnutData"
-              data={this.props.fuelDoughnutData}
-              options={this.lineGraphOptions}
-              onGraphFlowBtnClick={this.onGraphFlowBtnClick}
-              dataFlowPause={this.props.chartsDataFlowStatus.fuelDataFlowPause}
-              onHookBtnClick={this.onHookChartDataBtnClick}
-              isHooked={this.props.callbackRegisterStatus["fuelDoughnutData"]}
-              target="hookChartModalId"
-              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
+        <div className="row mt-4 mx-4">
+          <div className="col-6 " align="center">
+            <div
+              id="map"
+              ref={el => (this.mapContainer = el)}
+              className="map"
             />
           </div>
-          {/* Bar Chart */}
-          <div
-            className="col-xl-3 col-lg-4  col-md-8 mt-4 px-2
-             h-100"
-            align="center"
-          >
-            <BarChart
-              title="MQTT Broker Info"
-              graphName="mqttBarDataFlowPause"
-              graphTarget="mqttBarData"
-              data={this.props.mqttBarData}
-              onGraphFlowBtnClick={this.onGraphFlowBtnClick}
-              dataFlowPause={
-                this.props.chartsDataFlowStatus.mqttBarDataFlowPause
-              }
-              onHookBtnClick={this.onHookChartDataBtnClick}
-              isHooked={this.props.callbackRegisterStatus["mqttBarData"]}
-              target="hookChartModalId"
-              isHookable={false}
-              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
-            />
-          </div>
-          {/* Scatter Chart (Emissions) */}
-          <div
-            className="col-xl-3 col-lg-4  col-md-8 mt-4 px-2
-             h-100 "
-            align="center"
-          >
-            <ScatterChart
-              title="Emission"
-              graphName="emissionDataFlowPause"
-              graphTarget="emissionsScatterData"
-              data={this.props.emissionsScatterData}
-              onGraphFlowBtnClick={this.onGraphFlowBtnClick}
-              dataFlowPause={
-                this.props.chartsDataFlowStatus.emissionDataFlowPause
-              }
-              onHookBtnClick={this.onHookChartDataBtnClick}
-              isHooked={
-                this.props.callbackRegisterStatus["emissionsScatterData"]
-              }
-              target="hookChartModalId"
-              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
-            />
+          <div className="col-6" align="center">
+            <div className="row">
+              <div className="col-6 ">
+                <DoughnutChart
+                  title="Fuel Usage"
+                  graphName="fuelDataFlowPause"
+                  graphTarget="fuelDoughnutData"
+                  data={this.props.fuelDoughnutData}
+                  options={this.lineGraphOptions}
+                  onGraphFlowBtnClick={this.onGraphFlowBtnClick}
+                  dataFlowPause={
+                    this.props.chartsDataFlowStatus.fuelDataFlowPause
+                  }
+                  onHookBtnClick={this.onHookChartDataBtnClick}
+                  isHooked={
+                    this.props.callbackRegisterStatus["fuelDoughnutData"]
+                  }
+                  target="hookChartModalId"
+                  onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
+                />
+              </div>
+              <div className="col-6">
+                <BarChart
+                  title="MQTT Broker Info"
+                  graphName="mqttBarDataFlowPause"
+                  graphTarget="mqttBarData"
+                  data={this.props.mqttBarData}
+                  onGraphFlowBtnClick={this.onGraphFlowBtnClick}
+                  dataFlowPause={
+                    this.props.chartsDataFlowStatus.mqttBarDataFlowPause
+                  }
+                  onHookBtnClick={this.onHookChartDataBtnClick}
+                  isHooked={this.props.callbackRegisterStatus["mqttBarData"]}
+                  target="hookChartModalId"
+                  isHookable={false}
+                  onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
+                />
+              </div>
+              <div className="col-6 mt-2">
+                <ScatterChart
+                  title="Emission"
+                  graphName="emissionDataFlowPause"
+                  graphTarget="emissionsScatterData"
+                  data={this.props.emissionsScatterData}
+                  onGraphFlowBtnClick={this.onGraphFlowBtnClick}
+                  dataFlowPause={
+                    this.props.chartsDataFlowStatus.emissionDataFlowPause
+                  }
+                  onHookBtnClick={this.onHookChartDataBtnClick}
+                  isHooked={
+                    this.props.callbackRegisterStatus["emissionsScatterData"]
+                  }
+                  target="hookChartModalId"
+                  onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
+                />
+              </div>
+              <div className="col-6 mt-2">
+                <ScatterChart
+                  title="Emission"
+                  graphName="emissionDataFlowPause"
+                  graphTarget="emissionsScatterData"
+                  data={this.props.emissionsScatterData}
+                  onGraphFlowBtnClick={this.onGraphFlowBtnClick}
+                  dataFlowPause={
+                    this.props.chartsDataFlowStatus.emissionDataFlowPause
+                  }
+                  onHookBtnClick={this.onHookChartDataBtnClick}
+                  isHooked={
+                    this.props.callbackRegisterStatus["emissionsScatterData"]
+                  }
+                  target="hookChartModalId"
+                  onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

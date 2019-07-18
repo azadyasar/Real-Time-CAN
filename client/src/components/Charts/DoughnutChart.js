@@ -20,7 +20,10 @@ export default class DoughnutChart extends Component {
     return (
       <div className="card chart-card">
         <div className="card-header">{this.props.title}</div>
-        <Doughnut data={this.props.data} />
+        <Doughnut
+          data={this.props.data}
+          options={{ rotation: 1 * Math.PI, circumference: 1 * Math.PI }}
+        />
         <div className="card-body">
           <button
             className={classNames("btn m-2", {

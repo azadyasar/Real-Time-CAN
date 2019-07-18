@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@turf/turf": "^5.1.6",
     "chart.js": "^2.8.0",
     "classnames": "^2.2.6",
     "ladda": "^2.0.1",
     "lodash.clonedeep": "^4.5.0",
+    "mapbox-gl": "^1.1.1",
     "mqtt": "^3.0.0",
     "paho-mqtt": "^1.1.0",
     "prop-types": "^15.7.2",
