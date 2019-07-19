@@ -29,7 +29,7 @@ import DoughnutChart from "./Charts/DoughnutChart";
 import ScatterChart from "./Charts/ScatterChart";
 import BarChart from "./Charts/BarChart";
 import MapChart from "./Charts/MapChart";
-const turf = require("@turf/turf");
+import MeterChart from "./Charts/MeterChart";
 
 const istCoord = {
   latitude: 40.967905,
@@ -52,7 +52,8 @@ const mapStateToProps = state => {
     isAllGraphFlowPaused: state.chart.isAllGraphFlowPaused,
     callbackRegisterStatus: state.chart.callbackRegisterStatus,
     lineChartRange: state.chart.lineChartRange,
-    gpsRouteCoords: state.chart.gpsRouteCoords
+    gpsRouteCoords: state.chart.gpsRouteCoords,
+    speedometerData: state.chart.speedometerData
   };
 };
 
@@ -127,6 +128,12 @@ export class ConnectedChartsContainer extends Component {
         generator: this.generateRouteData,
         callback: () => console.error("Implement me!!"),
         pause: "gpsRouteCoordsFlowPause",
+        generatorInterval: null
+      },
+      speedometerData: {
+        generator: this.generateSpeedometerData,
+        callback: () => console.error("Implement me!!"),
+        pause: "speedometerDataFlowPause",
         generatorInterval: null
       }
     };
@@ -335,6 +342,31 @@ export class ConnectedChartsContainer extends Component {
     this.props.updateChartData({
       data: newFuelDoughnutData,
       chartName: "fuelDoughnutData"
+    });
+  };
+
+  generateSpeedometerData = () => {
+    if (this.props.chartsDataFlowStatus.speedometerDataFlowPause) return;
+
+    const newSpeedometerData = Object.assign({}, this.props.speedometerData);
+    let prob = 0.25;
+    if (newSpeedometerData.datasets[0].data[0] > 160) prob = 0.8;
+    let speedometerData = [
+      newSpeedometerData.datasets[0].data[0] + (Math.random() - prob) * 40
+    ];
+    speedometerData[0] = speedometerData[0] > 0 ? speedometerData[0] : 0;
+    const newDatasets = [];
+    newSpeedometerData.datasets.forEach(ds =>
+      newDatasets.push(
+        Object.assign({}, ds, { data: Object.assign({}, ds.data) })
+      )
+    );
+    newDatasets[0].data = speedometerData;
+
+    newSpeedometerData.datasets = newDatasets;
+    this.props.updateChartData({
+      data: newSpeedometerData,
+      chartName: "speedometerData"
     });
   };
 
@@ -571,42 +603,36 @@ export class ConnectedChartsContainer extends Component {
         />
         <div className="row mt-4 mx-4">
           <div className="col-6" align="center">
-            <div className="">
-              <LineChart
-                title="Speed"
-                graphName="speedDataFlowPause"
-                graphTarget="speedLineData"
-                data={this.props.speedLineData}
-                options={this.lineGraphOptions}
-                onGraphFlowBtnClick={this.onGraphFlowBtnClick}
-                dataFlowPause={
-                  this.props.chartsDataFlowStatus.speedDataFlowPause
-                }
-                onHookBtnClick={this.onHookChartDataBtnClick}
-                target="hookChartModalId"
-                isHooked={this.props.callbackRegisterStatus["speedLineData"]}
-                onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
-              />
-            </div>
+            <LineChart
+              title="Speed"
+              graphName="speedDataFlowPause"
+              graphTarget="speedLineData"
+              data={this.props.speedLineData}
+              options={this.lineGraphOptions}
+              onGraphFlowBtnClick={this.onGraphFlowBtnClick}
+              dataFlowPause={this.props.chartsDataFlowStatus.speedDataFlowPause}
+              onHookBtnClick={this.onHookChartDataBtnClick}
+              target="hookChartModalId"
+              isHooked={this.props.callbackRegisterStatus["speedLineData"]}
+              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
+            />
           </div>
           <div className="col-6 " align="center">
-            <div className="">
-              <LineChart
-                title="RPM"
-                graphName="rpmDataFlowPause"
-                graphTarget="rpmLineData"
-                data={this.props.rpmLineData}
-                options={Object.assign({}, this.lineGraphOptions, {
-                  fill: true
-                })}
-                onGraphFlowBtnClick={this.onGraphFlowBtnClick}
-                dataFlowPause={this.props.chartsDataFlowStatus.rpmDataFlowPause}
-                onHookBtnClick={this.onHookChartDataBtnClick}
-                target="hookChartModalId"
-                isHooked={this.props.callbackRegisterStatus["rpmLineData"]}
-                onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
-              />
-            </div>
+            <LineChart
+              title="RPM"
+              graphName="rpmDataFlowPause"
+              graphTarget="rpmLineData"
+              data={this.props.rpmLineData}
+              options={Object.assign({}, this.lineGraphOptions, {
+                fill: true
+              })}
+              onGraphFlowBtnClick={this.onGraphFlowBtnClick}
+              dataFlowPause={this.props.chartsDataFlowStatus.rpmDataFlowPause}
+              onHookBtnClick={this.onHookChartDataBtnClick}
+              target="hookChartModalId"
+              isHooked={this.props.callbackRegisterStatus["rpmLineData"]}
+              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
+            />
           </div>
         </div>
         <div className="row mt-4 mx-4">
@@ -648,6 +674,42 @@ export class ConnectedChartsContainer extends Component {
                 />
               </div>
               <div className="col-6">
+                <MeterChart
+                  title="Speed"
+                  graphName="speedometerDataFlowPause"
+                  graphTarget="speedometerData"
+                  data={this.props.speedometerData}
+                  onGraphFlowBtnClick={this.onGraphFlowBtnClick}
+                  dataFlowPause={
+                    this.props.chartsDataFlowStatus.speedometerDataFlowPause
+                  }
+                  onHookBtnClick={this.onHookChartDataBtnClick}
+                  isHooked={
+                    this.props.callbackRegisterStatus["speedometerData"]
+                  }
+                  target="hookChartModalId"
+                  onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
+                />
+              </div>
+              <div className="col-6 mt-2">
+                <ScatterChart
+                  title="Emission"
+                  graphName="emissionDataFlowPause"
+                  graphTarget="emissionsScatterData"
+                  data={this.props.emissionsScatterData}
+                  onGraphFlowBtnClick={this.onGraphFlowBtnClick}
+                  dataFlowPause={
+                    this.props.chartsDataFlowStatus.emissionDataFlowPause
+                  }
+                  onHookBtnClick={this.onHookChartDataBtnClick}
+                  isHooked={
+                    this.props.callbackRegisterStatus["emissionsScatterData"]
+                  }
+                  target="hookChartModalId"
+                  onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
+                />
+              </div>
+              <div className="col-6 mt-2">
                 <BarChart
                   title="MQTT Broker Info"
                   graphName="mqttBarDataFlowPause"
@@ -661,42 +723,6 @@ export class ConnectedChartsContainer extends Component {
                   isHooked={this.props.callbackRegisterStatus["mqttBarData"]}
                   target="hookChartModalId"
                   isHookable={false}
-                  onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
-                />
-              </div>
-              <div className="col-6 mt-2">
-                <ScatterChart
-                  title="Emission"
-                  graphName="emissionDataFlowPause"
-                  graphTarget="emissionsScatterData"
-                  data={this.props.emissionsScatterData}
-                  onGraphFlowBtnClick={this.onGraphFlowBtnClick}
-                  dataFlowPause={
-                    this.props.chartsDataFlowStatus.emissionDataFlowPause
-                  }
-                  onHookBtnClick={this.onHookChartDataBtnClick}
-                  isHooked={
-                    this.props.callbackRegisterStatus["emissionsScatterData"]
-                  }
-                  target="hookChartModalId"
-                  onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
-                />
-              </div>
-              <div className="col-6 mt-2">
-                <ScatterChart
-                  title="Emission"
-                  graphName="emissionDataFlowPause"
-                  graphTarget="emissionsScatterData"
-                  data={this.props.emissionsScatterData}
-                  onGraphFlowBtnClick={this.onGraphFlowBtnClick}
-                  dataFlowPause={
-                    this.props.chartsDataFlowStatus.emissionDataFlowPause
-                  }
-                  onHookBtnClick={this.onHookChartDataBtnClick}
-                  isHooked={
-                    this.props.callbackRegisterStatus["emissionsScatterData"]
-                  }
-                  target="hookChartModalId"
                   onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
                 />
               </div>
@@ -722,9 +748,11 @@ export class ConnectedChartsContainer extends Component {
         "Starting data generation for: ",
         this.graphGeneratorAttributes[key].pause
       );
+      let multiplier = 2;
+      if (key === "speedometerData") multiplier = 1;
       this.graphGeneratorAttributes[key].generatorInterval = setInterval(
         this.graphGeneratorAttributes[key].generator,
-        (Math.random() + 1) * 2 * 1000
+        (Math.random() + 1) * multiplier * 1000
       );
     }
   }

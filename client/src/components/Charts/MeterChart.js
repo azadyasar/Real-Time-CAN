@@ -3,7 +3,7 @@ import { Doughnut } from "react-chartjs-2";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 
-export default class DoughnutChart extends Component {
+export default class MeterChart extends Component {
   onHookBtnClick = event => {
     if (this.props.isHooked)
       // eslint-disable-next-line no-undef
@@ -17,18 +17,28 @@ export default class DoughnutChart extends Component {
   };
 
   render() {
+    const currentSpeed = this.props.data.datasets[0].data[0];
+    let whiteArea = 240 - currentSpeed;
+    whiteArea = whiteArea > 0 ? whiteArea : 0;
+    const newSpeedometerData = [currentSpeed, whiteArea];
+    const newData = Object.assign({}, this.props.data, {
+      datasets: [
+        Object.assign({}, this.props.data.datasets[0], {
+          data: newSpeedometerData
+        })
+      ]
+    });
+
     return (
       <div className="card chart-card h-100">
         <div className="card-header">{this.props.title}</div>
 
-        <div className="card-body p-0 pt-2 h-100">
+        <div className="card-body p-0 pt-2">
           <Doughnut
-            data={this.props.data}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false
-            }}
+            data={newData}
+            options={{ rotation: 1 * Math.PI, circumference: 1 * Math.PI }}
           />
+          <h3 className="display-4 ">{currentSpeed.toFixed(0)}</h3>
         </div>
         <div className="card-footer p-0 py-1">
           <button
@@ -80,7 +90,7 @@ export default class DoughnutChart extends Component {
   }
 }
 
-DoughnutChart.propTypes = {
+MeterChart.propTypes = {
   data: PropTypes.object.isRequired,
   options: PropTypes.object,
   onGraphFlowBtnClick: PropTypes.func.isRequired,

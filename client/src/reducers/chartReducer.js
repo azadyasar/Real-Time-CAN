@@ -52,8 +52,19 @@ const initialFuelDoughnutData = {
   datasets: [
     {
       data: [],
-      backgroundColor: ["#CCC", "#36A2EB", "#FFCE56", "#8c0b63"],
+      backgroundColor: ["#7ba1c2", "#36A2EB", "#FFCE56", "#8c0b63"],
       hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#680849"]
+    }
+  ]
+};
+
+const initialSpeedometerData = {
+  labels: ["Speed"],
+  datasets: [
+    {
+      data: [0],
+      backgroundColor: ["#7ba1c2", "#f1f1f1"],
+      hoverBackgroundColor: ["#010e9e"]
     }
   ]
 };
@@ -214,7 +225,17 @@ const chartNameInitialDataDict = {
       }
     ]
   },
-  gpsRouteCoords: [[29.103301, 40.967905]]
+  gpsRouteCoords: [[29.103301, 40.967905]],
+  speedometerData: {
+    labels: ["Speed"],
+    datasets: [
+      {
+        data: [0],
+        backgroundColor: ["#7ba1c2", "#f1f1f1"],
+        hoverBackgroundColor: ["#010e9e"]
+      }
+    ]
+  }
 };
 
 const initialChartState = {
@@ -225,6 +246,7 @@ const initialChartState = {
   emissionsScatterData: Object.assign({}, initialEmissionScatterData),
   mqttBarData: Object.assign({}, initialMqttBarData),
   gpsRouteCoords: [[29.103301, 40.967905]],
+  speedometerData: Object.assign({}, initialSpeedometerData),
   lineChartRange: 10,
   chartsDataFlowStatus: {
     speedDataFlowPause: true,
@@ -232,7 +254,8 @@ const initialChartState = {
     fuelDataFlowPause: true,
     emissionDataFlowPause: true,
     mqttBarDataFlowPause: true,
-    gpsRouteCoordsFlowPause: true
+    gpsRouteCoordsFlowPause: true,
+    speedometerDataFlowPause: true
   },
   callbackRegisterStatus: {
     speedLineData: false,
@@ -240,7 +263,8 @@ const initialChartState = {
     fuelDoughnutData: false,
     emissionsScatterData: false,
     mqttBarData: true,
-    gpsRouteCoords: false
+    gpsRouteCoords: false,
+    speedometerData: false
   }
 };
 
@@ -282,7 +306,8 @@ function chartReducer(state = initialChartState, action) {
         fuelDoughnutData: chartNameInitialDataDict["fuelDoughnutData"],
         emissionsScatterData: chartNameInitialDataDict["emissionsScatterData"],
         mqttBarData: chartNameInitialDataDict["mqttBarData"],
-        gpsRouteCoords: chartNameInitialDataDict["gpsRouteCoords"]
+        gpsRouteCoords: chartNameInitialDataDict["gpsRouteCoords"],
+        speedometerData: chartNameInitialDataDict["speedometerData"]
       });
     case RESET_CHART_DATA:
       if (Array.isArray(chartNameInitialDataDict[action.payload.chartName]))
