@@ -3,7 +3,6 @@ import moment from "moment";
 import { toast } from "react-toastify";
 import mapboxgl from "mapbox-gl";
 import "../css/ChartsContainer.css";
-import "mapbox-gl/src/css/mapbox-gl.css";
 
 import { connect } from "react-redux";
 import {
@@ -140,7 +139,7 @@ export class ConnectedChartsContainer extends Component {
 
     this.lineGraphOptions = {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
       scales: {
         yAxes: [
           {
@@ -349,12 +348,21 @@ export class ConnectedChartsContainer extends Component {
     if (this.props.chartsDataFlowStatus.speedometerDataFlowPause) return;
 
     const newSpeedometerData = Object.assign({}, this.props.speedometerData);
+
     let prob = 0.25;
     if (newSpeedometerData.datasets[0].data[0] > 160) prob = 0.8;
     let speedometerData = [
       newSpeedometerData.datasets[0].data[0] + (Math.random() - prob) * 40
     ];
     speedometerData[0] = speedometerData[0] > 0 ? speedometerData[0] : 0;
+
+    prob = 0.25;
+    if (newSpeedometerData.datasets[1].data[0] > 150) prob = 0.8;
+    let rpmData = [
+      newSpeedometerData.datasets[1].data[0] + (Math.random() - prob) * 40
+    ];
+    rpmData[0] = rpmData[0] > 0 ? rpmData[0] : 0;
+
     const newDatasets = [];
     newSpeedometerData.datasets.forEach(ds =>
       newDatasets.push(
@@ -362,8 +370,10 @@ export class ConnectedChartsContainer extends Component {
       )
     );
     newDatasets[0].data = speedometerData;
+    newDatasets[1].data = rpmData;
 
     newSpeedometerData.datasets = newDatasets;
+
     this.props.updateChartData({
       data: newSpeedometerData,
       chartName: "speedometerData"
@@ -602,40 +612,6 @@ export class ConnectedChartsContainer extends Component {
           onApplySettingsSubmit={this.onChartSettingsApply}
         />
         <div className="row mt-4 mx-4">
-          <div className="col-6" align="center">
-            <LineChart
-              title="Speed"
-              graphName="speedDataFlowPause"
-              graphTarget="speedLineData"
-              data={this.props.speedLineData}
-              options={this.lineGraphOptions}
-              onGraphFlowBtnClick={this.onGraphFlowBtnClick}
-              dataFlowPause={this.props.chartsDataFlowStatus.speedDataFlowPause}
-              onHookBtnClick={this.onHookChartDataBtnClick}
-              target="hookChartModalId"
-              isHooked={this.props.callbackRegisterStatus["speedLineData"]}
-              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
-            />
-          </div>
-          <div className="col-6 " align="center">
-            <LineChart
-              title="RPM"
-              graphName="rpmDataFlowPause"
-              graphTarget="rpmLineData"
-              data={this.props.rpmLineData}
-              options={Object.assign({}, this.lineGraphOptions, {
-                fill: true
-              })}
-              onGraphFlowBtnClick={this.onGraphFlowBtnClick}
-              dataFlowPause={this.props.chartsDataFlowStatus.rpmDataFlowPause}
-              onHookBtnClick={this.onHookChartDataBtnClick}
-              target="hookChartModalId"
-              isHooked={this.props.callbackRegisterStatus["rpmLineData"]}
-              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
-            />
-          </div>
-        </div>
-        <div className="row mt-4 mx-4">
           <div className="col-6 " align="center">
             <MapChart
               title="GPS"
@@ -729,6 +705,40 @@ export class ConnectedChartsContainer extends Component {
             </div>
           </div>
         </div>
+        <div className="row mt-4 mx-4">
+          <div className="col-6" align="center">
+            <LineChart
+              title="Speed"
+              graphName="speedDataFlowPause"
+              graphTarget="speedLineData"
+              data={this.props.speedLineData}
+              options={this.lineGraphOptions}
+              onGraphFlowBtnClick={this.onGraphFlowBtnClick}
+              dataFlowPause={this.props.chartsDataFlowStatus.speedDataFlowPause}
+              onHookBtnClick={this.onHookChartDataBtnClick}
+              target="hookChartModalId"
+              isHooked={this.props.callbackRegisterStatus["speedLineData"]}
+              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
+            />
+          </div>
+          <div className="col-6 " align="center">
+            <LineChart
+              title="RPM"
+              graphName="rpmDataFlowPause"
+              graphTarget="rpmLineData"
+              data={this.props.rpmLineData}
+              options={Object.assign({}, this.lineGraphOptions, {
+                fill: true
+              })}
+              onGraphFlowBtnClick={this.onGraphFlowBtnClick}
+              dataFlowPause={this.props.chartsDataFlowStatus.rpmDataFlowPause}
+              onHookBtnClick={this.onHookChartDataBtnClick}
+              target="hookChartModalId"
+              isHooked={this.props.callbackRegisterStatus["rpmLineData"]}
+              onCleanChartDataBtnClick={this.onCleanChartDataBtnClick}
+            />
+          </div>
+        </div>
       </div>
     );
   }
@@ -767,10 +777,9 @@ export class ConnectedChartsContainer extends Component {
 
   getDoughnutData = () => {
     return [
-      getRandomInt(50, 200),
       getRandomInt(100, 150),
       getRandomInt(150, 250),
-      getRandomInt(100, 300)
+      getRandomInt(50, 200)
     ];
   };
 

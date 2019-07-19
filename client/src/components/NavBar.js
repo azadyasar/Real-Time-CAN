@@ -12,11 +12,11 @@ export default class NavBar extends Component {
       <div>
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
           <div className="mx-auto d-sm-flex d-block flex-sm-nowrap">
-            <Link className="navbar-brand" to="/">
+            <Link className="navbar-brand align-self-start" align="left" to="/">
               <img
                 src={require("../img/avl_logo_svg.svg")}
                 width="60"
-                height="50"
+                height="60"
                 alt=""
               />{" "}
             </Link>

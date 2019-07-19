@@ -18,10 +18,10 @@ export default class LineChart extends Component {
 
   render() {
     return (
-      <div className="card chart-card">
+      <div className="card chart-card h-100">
         <div className="card-header">{this.props.title}</div>
 
-        <div className="card-body p-0 pt-2">
+        <div className="card-body p-0 pt-2 line-chart-body">
           <Line data={this.props.data} options={this.props.options} />
         </div>
         <div className="card-footer p-0 py-1">

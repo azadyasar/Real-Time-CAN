@@ -18,7 +18,7 @@ export default class ScatterChart extends Component {
 
   render() {
     return (
-      <div className="card chart-card">
+      <div className="card chart-card h-100">
         <div className="card-header">{this.props.title}</div>
 
         <div className="card-body p-0 pt-2">

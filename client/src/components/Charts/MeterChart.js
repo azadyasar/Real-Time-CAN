@@ -21,13 +21,24 @@ export default class MeterChart extends Component {
     let whiteArea = 240 - currentSpeed;
     whiteArea = whiteArea > 0 ? whiteArea : 0;
     const newSpeedometerData = [currentSpeed, whiteArea];
+
+    const currentRpm = this.props.data.datasets[1].data[0];
+    whiteArea = 300 - currentRpm;
+    whiteArea = whiteArea > 0 ? whiteArea : 0;
+    const newRpmData = [currentRpm, whiteArea];
+
     const newData = Object.assign({}, this.props.data, {
       datasets: [
         Object.assign({}, this.props.data.datasets[0], {
           data: newSpeedometerData
+        }),
+        Object.assign({}, this.props.data.datasets[1], {
+          data: newRpmData
         })
       ]
     });
+
+    console.log(newData);
 
     return (
       <div className="card chart-card h-100">
@@ -36,9 +47,29 @@ export default class MeterChart extends Component {
         <div className="card-body p-0 pt-2">
           <Doughnut
             data={newData}
-            options={{ rotation: 1 * Math.PI, circumference: 1 * Math.PI }}
+            options={{
+              rotation: 1 * Math.PI,
+              circumference: 1 * Math.PI,
+              legend: {
+                position: "top"
+              },
+              title: { display: false, text: "Gauge" },
+              tooltips: {
+                callbacks: {
+                  label: (item, data) => {
+                    console.log("cb ttip", item, data);
+                    return (
+                      data.datasets[item.datasetIndex].label +
+                      ": " +
+                      data.datasets[item.datasetIndex].data[0]
+                    );
+                  }
+                }
+              }
+            }}
           />
-          <h3 className="display-4 ">{currentSpeed.toFixed(0)}</h3>
+          <h5 className="display-5 ">Speed: {currentSpeed.toFixed(0)}</h5>
+          <h5 className="display-5 ">RPM: {currentRpm.toFixed(0)}</h5>
         </div>
         <div className="card-footer p-0 py-1">
           <button

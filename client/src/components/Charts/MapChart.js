@@ -45,8 +45,36 @@ export default class MapChart extends Component {
       zoom: 10
     });
 
+    const ctrlPoint = new MapboxGLButtonControl({
+      className: "fa fa-2x fa-map-marker",
+      title: "Locate",
+      eventHandler: this.onCustomBtClick
+    });
+
+    this.map.addControl(ctrlPoint, "top-right");
+    this.map.addControl(new mapboxgl.FullscreenControl());
+    this.map.addControl(new mapboxgl.GeolocateControl());
+    this.map.addControl(
+      new mapboxgl.NavigationControl({ showZoom: true }),
+      "top-left"
+    );
+    this.map.addControl(new mapboxgl.ScaleControl(), "top-right");
+
     this.map.on("style.load", this.onMapStyleLoad);
   }
+
+  onCustomBtClick = event => {
+    const routeCoordsLength = this.props.routeCoords.length;
+    if (routeCoordsLength > 0) {
+      this.map.flyTo({
+        center: [
+          this.props.routeCoords[routeCoordsLength - 1][0],
+          this.props.routeCoords[routeCoordsLength - 1][1]
+        ],
+        zoom: 12
+      });
+    }
+  };
 
   componentWillReceiveProps(newProps) {
     if (newProps.routeCoords.length > 1) {
@@ -116,7 +144,7 @@ export default class MapChart extends Component {
 
   render() {
     return (
-      <div className="card chart-card">
+      <div className="card chart-card h-100">
         <div className="card-header">{this.props.title}</div>
 
         <div className="card-body p-0">
@@ -190,3 +218,34 @@ MapChart.propTypes = {
   isHooked: PropTypes.bool.isRequired,
   onCleanChartDataBtnClick: PropTypes.func.isRequired
 };
+
+class MapboxGLButtonControl {
+  constructor({ className = "", title = "", eventHandler }) {
+    this._classname = className;
+    this._title = title;
+    this._eventHandler = eventHandler;
+  }
+
+  onAdd(map) {
+    this._btn = document.createElement("button");
+    this._btn.className = "mapboxgl-ctrl-icon " + this._classname;
+    this._btn.type = "button";
+    this._btn.title = this._title;
+    this._btn.onclick = this._eventHandler;
+
+    this._icn = document.createElement("i");
+    this._icn.className = this._classname;
+    this._btn.appendChild(this._icn);
+
+    this._container = document.createElement("div");
+    this._container.className = "mapboxgl-ctrl-group mapboxgl-ctrl";
+    this._container.appendChild(this._btn);
+
+    return this._container;
+  }
+
+  onRemove() {
+    this._container.parentNode.removeChild(this._container);
+    this._map = undefined;
+  }
+}

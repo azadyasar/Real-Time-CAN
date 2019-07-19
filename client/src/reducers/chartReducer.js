@@ -48,23 +48,32 @@ const initialRpmLineData = {
 };
 
 const initialFuelDoughnutData = {
-  labels: ["Red", "Green", "Yellow", "Profit"],
+  labels: ["Gas", "Diesel", "Other"],
   datasets: [
     {
       data: [],
-      backgroundColor: ["#7ba1c2", "#36A2EB", "#FFCE56", "#8c0b63"],
-      hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#680849"]
+      backgroundColor: ["#7ba1c2", "#36A2EB", "#FFCE56"],
+      hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"]
     }
   ]
 };
 
 const initialSpeedometerData = {
-  labels: ["Speed"],
+  labels: ["Value", "Space"],
   datasets: [
     {
+      id: "speedMeter",
+      label: "Speed",
       data: [0],
       backgroundColor: ["#7ba1c2", "#f1f1f1"],
       hoverBackgroundColor: ["#010e9e"]
+    },
+    {
+      id: "rpmMeter",
+      label: "RPM",
+      data: [0],
+      backgroundColor: ["#dc3545", "#f1f1f1"],
+      hoverBackgroundColor: ["#7d1822"]
     }
   ]
 };
@@ -167,12 +176,12 @@ const chartNameInitialDataDict = {
     ]
   },
   fuelDoughnutData: {
-    labels: ["Red", "Green", "Yellow", "Profit"],
+    labels: ["Gas", "Diesel", "Other"],
     datasets: [
       {
         data: [],
-        backgroundColor: ["#CCC", "#36A2EB", "#FFCE56", "#8c0b63"],
-        hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#680849"]
+        backgroundColor: ["#7ba1c2", "#36A2EB", "#FFCE56"],
+        hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"]
       }
     ]
   },
@@ -227,12 +236,21 @@ const chartNameInitialDataDict = {
   },
   gpsRouteCoords: [[29.103301, 40.967905]],
   speedometerData: {
-    labels: ["Speed"],
+    labels: ["Value", "Space"],
     datasets: [
       {
+        id: "speedMeter",
+        label: "Speed",
         data: [0],
         backgroundColor: ["#7ba1c2", "#f1f1f1"],
         hoverBackgroundColor: ["#010e9e"]
+      },
+      {
+        id: "rpmMeter",
+        label: "Space",
+        data: [0],
+        backgroundColor: ["#dc3545", "#f1f1f1"],
+        hoverBackgroundColor: ["#7d1822"]
       }
     ]
   }
@@ -281,7 +299,7 @@ function chartReducer(state = initialChartState, action) {
       });
     case UPDATE_CHART_DATA:
       console.debug(
-        "Updating chart data orig: ",
+        "Updating chart data " + action.payload.chartName + "orig: ",
         state[action.payload.chartName],
         ", new: ",
         action.payload.data
