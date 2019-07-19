@@ -59,6 +59,9 @@ export default class MapChart extends Component {
         newProps.routeCoords[newProps.routeCoords.length - 1][1]
       ]);
     }
+    if (this.currentLocationMarker) {
+      this.currentLocationMarker.addTo(this.map);
+    }
   }
 
   componentWillUnmount() {
@@ -66,6 +69,7 @@ export default class MapChart extends Component {
       this.currentLocationMarkerEl.remove();
       this.currentLocationMarker.remove();
     }
+    if (this.map) this.map.remove();
   }
 
   onMapStyleLoad = event => {

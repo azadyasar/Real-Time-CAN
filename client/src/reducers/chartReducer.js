@@ -213,7 +213,8 @@ const chartNameInitialDataDict = {
         data: [0, 0, 0]
       }
     ]
-  }
+  },
+  gpsRouteCoords: [[29.103301, 40.967905]]
 };
 
 const initialChartState = {
@@ -280,24 +281,23 @@ function chartReducer(state = initialChartState, action) {
         rpmLineData: chartNameInitialDataDict["rpmLineData"],
         fuelDoughnutData: chartNameInitialDataDict["fuelDoughnutData"],
         emissionsScatterData: chartNameInitialDataDict["emissionsScatterData"],
-        mqttBarData: chartNameInitialDataDict["mqttBarData"]
+        mqttBarData: chartNameInitialDataDict["mqttBarData"],
+        gpsRouteCoords: chartNameInitialDataDict["gpsRouteCoords"]
       });
     case RESET_CHART_DATA:
-      console.log(
-        "Cleaning: ",
-        action,
-        ", ",
-        state[action.payload.chartName],
-        ", ",
-        chartNameInitialDataDict[action.payload.chartName]
-      );
-      console.log("Initials: ", chartNameInitialDataDict);
-      return Object.assign({}, state, {
-        [action.payload.chartName]: Object.assign(
-          {},
-          chartNameInitialDataDict[action.payload.chartName]
-        )
-      });
+      if (Array.isArray(chartNameInitialDataDict[action.payload.chartName]))
+        return Object.assign({}, state, {
+          [action.payload.chartName]: chartNameInitialDataDict[
+            action.payload.chartName
+          ].concat()
+        });
+      else
+        return Object.assign({}, state, {
+          [action.payload.chartName]: Object.assign(
+            {},
+            chartNameInitialDataDict[action.payload.chartName]
+          )
+        });
     case SET_CALLBACK_REGISTER:
       return Object.assign({}, state, {
         callbackRegisterStatus: {
