@@ -11,14 +11,14 @@ export default function ChartsToolbar(props) {
   return (
     <div className="toolbar">
       <div className="btn-group">
-        <button type="button" className="btn btn-outline-primary toolbar-btn">
-          <i className="fa fa-2x fa-car" />
+        <button type="button" className="btn toolbar-btn">
+          <i className="fa fa-lg fa-car" />
         </button>
-        <button type="button" className="btn btn-outline-primary toolbar-btn">
-          <i className="fa fa-2x fa-cloud" />
+        <button type="button" className="btn toolbar-btn">
+          <i className="fa fa-lg fa-cloud" />
         </button>
         <button
-          className="btn btn-outline-primary toolbar-btn"
+          className="btn toolbar-btn"
           data-toggle="tooltip"
           data-placement="bottom"
           title="Toggle data generation"
@@ -26,29 +26,29 @@ export default function ChartsToolbar(props) {
         >
           <i
             className={classNames({
-              "fa fa-2x fa-play-circle": props.pauseAllGraphsFlow,
-              "fa fa-2x fa-pause-circle": !props.pauseAllGraphsFlow
+              "fa fa-lg fa-play-circle": props.pauseAllGraphsFlow,
+              "fa fa-lg fa-pause-circle": !props.pauseAllGraphsFlow
             })}
           />
         </button>
         <button
           type="button"
-          className="btn btn-outline-primary toolbar-btn"
+          className="btn toolbar-btn"
           data-toggle="tooltip"
           data-placement="bottom"
           title="Reset graph data"
           onClick={props.onCleanAllChartDataBtnClick}
         >
-          <i className="fa fa-2x fa-trash" />
+          <i className="fa fa-lg fa-trash" />
         </button>
         <button
           type="button"
-          className="btn btn-outline-primary toolbar-btn"
+          className="btn toolbar-btn"
           data-toggle="modal"
           data-target={`#${props.chartSettingsModalId}`}
           onClick={props.onSettingsBtnClick}
         >
-          <i className="fa fa-2x fa-cog" />
+          <i className="fa fa-lg fa-cog" />
         </button>
       </div>
     </div>

@@ -13,6 +13,9 @@ export default class MapChart extends Component {
   constructor(props) {
     super(props);
     console.debug("MapChart constructor");
+
+    this.track = false;
+
     this.MAPBOX_ACCESS_TOKEN =
       "pk.eyJ1IjoiYXphZHlhc2FyIiwiYSI6ImNqeTdhMnhvbDBvc2ozY3EweHBnMXhhcTAifQ.eD4ZHxvtoY49nVcJ_K8gPg";
     this.routeCoordsGEO = null;
@@ -64,6 +67,11 @@ export default class MapChart extends Component {
   }
 
   onCustomBtClick = event => {
+    this.track = !this.track;
+    const trackerButton = document.getElementById("trackerButtonId");
+    if (this.track) trackerButton.style.backgroundColor = "#cecece";
+    else trackerButton.style.backgroundColor = "#f1f1f1";
+
     const routeCoordsLength = this.props.routeCoords.length;
     if (routeCoordsLength > 0) {
       this.map.flyTo({
@@ -89,6 +97,13 @@ export default class MapChart extends Component {
     }
     if (this.currentLocationMarker) {
       this.currentLocationMarker.addTo(this.map);
+
+      if (this.track) {
+        this.map.flyTo({
+          center: this.currentLocationMarker.getLngLat(),
+          zoom: 12
+        });
+      }
     }
   }
 
@@ -228,10 +243,11 @@ class MapboxGLButtonControl {
 
   onAdd(map) {
     this._btn = document.createElement("button");
-    this._btn.className = "mapboxgl-ctrl-icon " + this._classname;
+    this._btn.className = "mapboxgl-ctrl-icon ";
     this._btn.type = "button";
     this._btn.title = this._title;
     this._btn.onclick = this._eventHandler;
+    this._btn.id = "trackerButtonId";
 
     this._icn = document.createElement("i");
     this._icn.className = this._classname;

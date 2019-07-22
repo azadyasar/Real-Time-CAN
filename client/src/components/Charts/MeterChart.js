@@ -53,19 +53,19 @@ export default class MeterChart extends Component {
               legend: {
                 position: "top"
               },
-              title: { display: false, text: "Gauge" },
-              tooltips: {
-                callbacks: {
-                  label: (item, data) => {
-                    console.log("cb ttip", item, data);
-                    return (
-                      data.datasets[item.datasetIndex].label +
-                      ": " +
-                      data.datasets[item.datasetIndex].data[0]
-                    );
-                  }
-                }
-              }
+              title: { display: false, text: "Gauge" }
+              // tooltips: {
+              //   callbacks: {
+              //     label: (item, data) => {
+              //       console.log("cb ttip", item, data);
+              //       return (
+              //         data.datasets[item.datasetIndex].label +
+              //         ": " +
+              //         data.datasets[item.datasetIndex].data[0]
+              //       );
+              //     }
+              //   }
+              // }
             }}
           />
           <h5 className="display-5 ">Speed: {currentSpeed.toFixed(0)}</h5>

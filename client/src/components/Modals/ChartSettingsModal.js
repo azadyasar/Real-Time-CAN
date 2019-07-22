@@ -10,8 +10,6 @@ export default class ChartSettingsModal extends Component {
   }
 
   onLineChartChange = event => {
-    console.log(event);
-    console.log(event.target);
     this.setState({
       lineChartRange: Number(event.target.value)
     });

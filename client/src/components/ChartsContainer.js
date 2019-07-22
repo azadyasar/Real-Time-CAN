@@ -446,16 +446,11 @@ export class ConnectedChartsContainer extends Component {
 
     const newLong =
       this.props.gpsRouteCoords[this.props.gpsRouteCoords.length - 1][0] +
-      (Math.random() - 0.2) / 50;
+      (Math.random() - 0.2) / 100;
     const newLat =
       this.props.gpsRouteCoords[this.props.gpsRouteCoords.length - 1][1] +
-      (Math.random() - 0.2) / 100;
+      (Math.random() - 0.2) / 200;
     this.props.addRouteCoord([newLong, newLat]);
-    /*   this.routeCoords.push([newLong, newLat]);
-    this.routeCoordsGEO = turf.lineString(this.routeCoords);
-    this.map.getSource("route-source").setData(this.routeCoordsGEO);
-    this.currentLocationMarker.setLngLat([newLong, newLat]);
-    this.currentLocationMarker.addTo(this.map); */
   };
 
   componentDidMount() {
@@ -472,19 +467,6 @@ export class ConnectedChartsContainer extends Component {
       });
       this.props.subscribeToTopic(topic);
     });
-
-    /* mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
-    this.map = new mapboxgl.Map({
-      container: "map",
-      style: "mapbox://styles/mapbox/streets-v10",
-      center: [istCoord.longitude, istCoord.latitude],
-      width: window.innerWidth,
-      height: window.innerHeight,
-      zoom: 10
-    });
-
-    this.routeCoords.push([istCoord.longitude, istCoord.latitude]);
-    this.map.on("style.load", this.onMapStyleLoad); */
   }
 
   componentWillReceiveProps(newProps) {
@@ -502,37 +484,6 @@ export class ConnectedChartsContainer extends Component {
       }
     });
   }
-
-  /*   onMapStyleLoad = event => {
-    console.debug("onMapStyleLoad ", event);
-    this.map.addSource("route-source", {
-      type: "geojson",
-      data: this.routeCoordsGEO
-    });
-
-    this.map.addLayer({
-      id: "mainRoute",
-      type: "line",
-      source: "route-source",
-      layout: {
-        "line-join": "round",
-        "line-cap": "round"
-      },
-      paint: {
-        "line-color": "#179dbe",
-        "line-width": 4
-      }
-    });
-
-    if (this.routeCoords.length > 2) {
-      this.routeCoordsGEO = turf.lineString(this.routeCoords);
-      this.map.getSource("route-source").setData(this.routeCoordsGEO);
-    }
-
-    if (this.currentLocationMarker) {
-      this.currentLocationMarker.addTo(this.map);
-    }
-  }; */
 
   onGraphFlowBtnClick = event => {
     console.log(event.target);
@@ -596,12 +547,6 @@ export class ConnectedChartsContainer extends Component {
   render() {
     return (
       <div className="container-fluid no-pm">
-        <ChartsToolbar
-          pauseAllGraphsFlow={this.props.isAllGraphFlowPaused}
-          onStartAllGraphFlowBtnClick={this.onStartAllGraphFlowBtnClick}
-          onCleanAllChartDataBtnClick={this.onCleanAllChartDataBtnClick}
-          chartSettingsModalId="chartSettingsModalId"
-        />
         <HookChartModal
           modalId="hookChartModalId"
           onApplyHookBtnSubmit={this.onHookChartDataSubmit}

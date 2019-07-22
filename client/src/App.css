@@ -1,23 +1,11 @@
-.toolbar {
-  background: #f1f1f1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 9999;
-  position: fixed;
-  top: 5px;
-  right: 0;
-}
-
 .mqtt-connection-status {
-  background: #c2b8b8;
   display: flex;
   flex-direction: column;
   align-items: center;
   z-index: 9999;
   position: fixed;
-  top: 75px;
-  right: 2vw;
+  top: 2.5vh;
+  right: 1vw;
 }
 
 .popover {
@@ -68,14 +56,24 @@ button > * {
   border-color: #c4d8d8;
 }
 
-.toolbar-btn {
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 9999;
+  /* position: fixed; */
+  top: 2.5vh;
+  right: 1vw;
+}
+
+/* .toolbar-btn {
   color: #497272;
   border-color: #4b7956;
 }
 
 .toolbar-btn:hover {
   background-color: #366161;
-}
+} */
 
 .line-chart-body {
   height: 30vh;
