@@ -68,8 +68,10 @@ export default class MeterChart extends Component {
               // }
             }}
           />
-          <h5 className="display-5 ">Speed: {currentSpeed.toFixed(0)}</h5>
-          <h5 className="display-5 ">RPM: {currentRpm.toFixed(0)}</h5>
+          <h5 className="display-5 speedmeter">
+            Speed: {currentSpeed.toFixed(0)}
+          </h5>
+          <h5 className="display-5 rpmmeter">RPM: {currentRpm.toFixed(0)}</h5>
         </div>
         <div className="card-footer p-0 py-1">
           <button

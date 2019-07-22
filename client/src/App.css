@@ -66,6 +66,14 @@ button > * {
   right: 1vw;
 }
 
+.speedmeter {
+  color: #7ba1c2;
+}
+
+.rpmmeter {
+  color: #dc3545;
+}
+
 /* .toolbar-btn {
   color: #497272;
   border-color: #4b7956;

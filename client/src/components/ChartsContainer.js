@@ -20,7 +20,6 @@ import {
 } from "../actions";
 
 import HookChartModal from "./Modals/HookChartModal";
-import ChartsToolbar from "./ChartsToolbar";
 import ChartSettingsModal from "./Modals/ChartSettingsModal";
 // Chart Cards
 import LineChart from "./Charts/LineChart";
@@ -650,7 +649,7 @@ export class ConnectedChartsContainer extends Component {
             </div>
           </div>
         </div>
-        <div className="row mt-4 mx-4">
+        <div className="row my-4 mx-4">
           <div className="col-6" align="center">
             <LineChart
               title="Speed"

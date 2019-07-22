@@ -103,6 +103,10 @@ export default class MapChart extends Component {
           center: this.currentLocationMarker.getLngLat(),
           zoom: 12
         });
+        // this.map.dragRotate.disable();
+        // this.map.scrollZoom.disable();
+      } else {
+        // this.map.dragRotate.enable();
       }
     }
   }
