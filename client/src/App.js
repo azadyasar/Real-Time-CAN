@@ -48,7 +48,7 @@ export class ConnectedApp extends Component {
     console.debug("App.js render: this: ", this);
     return (
       <div className="App">
-        <ToastContainer position="top-left" autoClose={5000} />
+        <ToastContainer position="bottom-left" autoClose={5000} />
         <NavBar />
         <Switch>
           <Route exact path="/" component={Landing} />

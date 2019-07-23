@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import moment from "moment";
 import { toast } from "react-toastify";
-import mapboxgl from "mapbox-gl";
 import "../css/ChartsContainer.css";
+
+import { Mutex } from "async-mutex";
 
 import { connect } from "react-redux";
 import {
@@ -28,11 +29,6 @@ import ScatterChart from "./Charts/ScatterChart";
 import BarChart from "./Charts/BarChart";
 import MapChart from "./Charts/MapChart";
 import MeterChart from "./Charts/MeterChart";
-
-const istCoord = {
-  latitude: 40.967905,
-  longitude: 29.103301
-};
 
 // eslint-disable-next-line
 function getRandomInt(min, max) {
@@ -78,16 +74,7 @@ export class ConnectedChartsContainer extends Component {
     super(props);
     console.debug("ChartContainer constructer");
 
-    this.routeCoordsGEO = null;
-    this.routeCoords = [];
-    this.currentLocationMarkerEl = document.createElement("i");
-    this.currentLocationMarkerEl.className = "fa fa-2x fa-map-marker";
-    this.currentLocationMarker = new mapboxgl.Marker(
-      this.currentLocationMarkerEl,
-      {
-        draggable: false
-      }
-    ).setLngLat({ lng: istCoord.longitude, lat: istCoord.latitude });
+    this.mqttBarDataMutex = new Mutex();
 
     this.currentObserverTopic = null;
 
@@ -430,13 +417,44 @@ export class ConnectedChartsContainer extends Component {
       return;
     }
 
-    const mqttBarChartCopy = Object.assign({}, this.props.mqttBarData);
-    let newData = mqttBarChartCopy.datasets[0].data.concat();
-    newData[mqttBarChartCopy.topics.indexOf(topic)] = incomingValue;
-    mqttBarChartCopy.datasets[0].data = newData;
-    this.props.updateChartData({
-      data: mqttBarChartCopy,
-      chartName: "mqttBarData"
+    this.mqttBarDataMutex.acquire().then(release => {
+      console.debug(
+        "MqttCB processing: ",
+        message.toString() + " for " + topic
+      );
+
+      const mqttBarChartCopy = Object.assign({}, this.props.mqttBarData);
+      mqttBarChartCopy.datasets[0].data[
+        mqttBarChartCopy.topics.indexOf(topic)
+      ] = incomingValue;
+      this.props.updateChartData({
+        data: mqttBarChartCopy,
+        chartName: "mqttBarData"
+      });
+      console.debug("Done");
+      release();
+      /* const mqttBarChartCopy = Object.assign({}, this.props.mqttBarData, {
+        datasets: this.props.mqttBarData.datasets.concat()
+      });
+      let newDatasets = [];
+      this.props.mqttBarData.datasets.forEach(ds =>
+        newDatasets.push(
+          Object.assign({}, ds, {
+            data: Object.assign({}, ds.data)
+          })
+        )
+      );
+      let newData = mqttBarChartCopy.datasets[0].data.concat();
+      newData[mqttBarChartCopy.topics.indexOf(topic)] = incomingValue;
+      newDatasets[0].data = newData;
+      console.log("Assigning newDatasets: ", newDatasets);
+      mqttBarChartCopy.datasets = newDatasets;
+      this.props.updateChartData({
+        data: mqttBarChartCopy,
+        chartName: "mqttBarData"
+      });
+      console.debug("Done");
+      release(); */
     });
   };
 
