@@ -449,26 +449,7 @@ export class ConnectedMessagesMQTT extends Component {
           <div className="row justify-content-center m-3 ">
             <div className="col-12 m-2" align="center">
               <div className="btn-group">
-                <button
-                  type="button"
-                  className="btn ladda-button"
-                  data-color="green"
-                  data-style="expand-left"
-                  id="mqttConnectButton"
-                  data-toggle="modal"
-                  data-size="m"
-                  data-target="#mqttServerDetailsModal"
-                >
-                  <span className="ladda-label">Connect</span>
-                  {/*             
-                  <span
-                    className="spinner-border spinner-border-sm mx-1"
-                    role="status"
-                    aria-hidden="true"
-                    hidden={true}
-                  /> 
-                  Connect*/}
-                </button>
+                {this.getConnectionButtonHTML(isConnected)}
 
                 <button
                   type="button"
@@ -618,6 +599,38 @@ export class ConnectedMessagesMQTT extends Component {
       else connectBtnElement.removeAttribute("disabled");
     if (shouldShow) this.l.start();
     else this.l.stop();
+  }
+
+  getConnectionButtonHTML(isConnected) {
+    if (isConnected)
+      return (
+        <button
+          type="button"
+          className="btn ladda-button"
+          data-color={isConnected ? "red" : "green"}
+          data-style="expand-left"
+          id="mqttConnectButton"
+          data-size="m"
+          onClick={this.onShutdownMQTTConnectionBtnClick}
+        >
+          <span className="ladda-label">Disconnect</span>
+        </button>
+      );
+    else
+      return (
+        <button
+          type="button"
+          className="btn ladda-button"
+          data-color={isConnected ? "red" : "green"}
+          data-style="expand-left"
+          id="mqttConnectButton"
+          data-toggle="modal"
+          data-size="m"
+          data-target="#mqttServerDetailsModal"
+        >
+          <span className="ladda-label">Connect</span>
+        </button>
+      );
   }
 }
 
