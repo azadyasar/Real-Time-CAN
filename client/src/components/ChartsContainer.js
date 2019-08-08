@@ -3,7 +3,6 @@ import moment from "moment";
 import { toast } from "react-toastify";
 import "../css/ChartsContainer.css";
 
-import { Mutex } from "async-mutex";
 
 import { connect } from "react-redux";
 import {
@@ -74,7 +73,7 @@ export class ConnectedChartsContainer extends Component {
     super(props);
     console.debug("ChartContainer constructer");
 
-    this.mqttBarDataMutex = new Mutex();
+  
 
     this.currentObserverTopic = null;
 
@@ -417,7 +416,6 @@ export class ConnectedChartsContainer extends Component {
       return;
     }
 
-    this.mqttBarDataMutex.acquire().then(release => {
       console.debug(
         "MqttCB processing: ",
         message.toString() + " for " + topic
@@ -432,7 +430,6 @@ export class ConnectedChartsContainer extends Component {
         chartName: "mqttBarData"
       });
       console.debug("Done");
-      release();
       /* const mqttBarChartCopy = Object.assign({}, this.props.mqttBarData, {
         datasets: this.props.mqttBarData.datasets.concat()
       });
@@ -455,7 +452,6 @@ export class ConnectedChartsContainer extends Component {
       });
       console.debug("Done");
       release(); */
-    });
   };
 
   generateRouteData = () => {
