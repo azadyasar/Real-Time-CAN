@@ -4,21 +4,57 @@ import classNames from "classnames";
 import PropTypes from "prop-types";
 
 export default class ScatterChart extends Component {
+  onHookBtnClick = event => {
+    if (this.props.isHooked)
+      // eslint-disable-next-line no-undef
+      $(`#${this.props.target}`).modal("hide");
+    // eslint-disable-next-line no-undef
+    else $(`#${this.props.target}`).modal();
+    event.preventDefault();
+    event.graphTarget = this.props.graphTarget;
+    event.isAlreadyHooked = this.props.isHooked;
+    this.props.onHookBtnClick(event);
+  };
+
   render() {
     return (
-      <div className="card chart-card">
+      <div className="card chart-card h-100">
         <div className="card-header">{this.props.title}</div>
-        <Scatter data={this.props.data} />
-        <div className="card-body">
+
+        <div className="card-body p-0 pt-2">
+          <Scatter data={this.props.data} />
+        </div>
+        <div className="card-footer p-0 py-1">
           <button
-            className={classNames("btn mt-2", {
-              "btn-primary": this.props.dataFlowPause,
-              "btn-secondary": !this.props.dataFlowPause
+            className={classNames("btn m-2", {
+              "btn-outline-primary": this.props.dataFlowPause,
+              "btn-outline-secondary": !this.props.dataFlowPause
             })}
             name={this.props.graphName}
             onClick={this.props.onGraphFlowBtnClick}
           >
             {this.getContinuePauseText(this.props.dataFlowPause)}
+          </button>
+          <button
+            className={classNames("btn m-2", {
+              "btn-outline-success": !this.props.isHooked,
+              "btn-outline-danger": this.props.isHooked
+            })}
+            name={this.props.title}
+            // data-toggle="modal"
+            data-target={`#${this.props.target}`}
+            onClick={this.onHookBtnClick}
+          >
+            {this.getHookDetachText(this.props.isHooked)}
+          </button>
+          <button
+            type="button"
+            className="btn m-2 btn-outline-primary"
+            name={this.props.graphTarget}
+            onClick={this.props.onCleanChartDataBtnClick}
+          >
+            {" "}
+            <i className="fa  fa-trash" name={this.props.graphTarget} />
           </button>
         </div>
       </div>
@@ -32,6 +68,10 @@ export default class ScatterChart extends Component {
   getContinuePauseText(isFlowPaused) {
     return isFlowPaused ? "Continue" : "Pause";
   }
+
+  getHookDetachText(isHooked) {
+    return isHooked ? "Detach" : "Hook";
+  }
 }
 
 ScatterChart.propTypes = {
@@ -40,5 +80,10 @@ ScatterChart.propTypes = {
   onGraphFlowBtnClick: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired,
   graphName: PropTypes.string.isRequired,
-  dataFlowPause: PropTypes.bool.isRequired
+  dataFlowPause: PropTypes.bool.isRequired,
+  target: PropTypes.string.isRequired,
+  onHookBtnClick: PropTypes.func.isRequired,
+  graphTarget: PropTypes.string.isRequired,
+  isHooked: PropTypes.bool.isRequired,
+  onCleanChartDataBtnClick: PropTypes.func.isRequired
 };

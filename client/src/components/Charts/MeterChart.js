@@ -3,7 +3,7 @@ import { Doughnut } from "react-chartjs-2";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 
-export default class DoughnutChart extends Component {
+export default class MeterChart extends Component {
   onHookBtnClick = event => {
     if (this.props.isHooked)
       // eslint-disable-next-line no-undef
@@ -17,18 +17,61 @@ export default class DoughnutChart extends Component {
   };
 
   render() {
+    const currentSpeed = this.props.data.datasets[0].data[0];
+    let whiteArea = 240 - currentSpeed;
+    whiteArea = whiteArea > 0 ? whiteArea : 0;
+    const newSpeedometerData = [currentSpeed, whiteArea];
+
+    const currentRpm = this.props.data.datasets[1].data[0];
+    whiteArea = 300 - currentRpm;
+    whiteArea = whiteArea > 0 ? whiteArea : 0;
+    const newRpmData = [currentRpm, whiteArea];
+
+    const newData = Object.assign({}, this.props.data, {
+      datasets: [
+        Object.assign({}, this.props.data.datasets[0], {
+          data: newSpeedometerData
+        }),
+        Object.assign({}, this.props.data.datasets[1], {
+          data: newRpmData
+        })
+      ]
+    });
+
+    console.log(newData);
+
     return (
       <div className="card chart-card h-100">
         <div className="card-header">{this.props.title}</div>
 
-        <div className="card-body p-0 pt-2 h-100">
+        <div className="card-body p-0 pt-2">
           <Doughnut
-            data={this.props.data}
+            data={newData}
             options={{
-              responsive: true,
-              maintainAspectRatio: false
+              rotation: 1 * Math.PI,
+              circumference: 1 * Math.PI,
+              legend: {
+                position: "top"
+              },
+              title: { display: false, text: "Gauge" }
+              // tooltips: {
+              //   callbacks: {
+              //     label: (item, data) => {
+              //       console.log("cb ttip", item, data);
+              //       return (
+              //         data.datasets[item.datasetIndex].label +
+              //         ": " +
+              //         data.datasets[item.datasetIndex].data[0]
+              //       );
+              //     }
+              //   }
+              // }
             }}
           />
+          <h5 className="display-5 speedmeter">
+            Speed: {currentSpeed.toFixed(0)}
+          </h5>
+          <h5 className="display-5 rpmmeter">RPM: {currentRpm.toFixed(0)}</h5>
         </div>
         <div className="card-footer p-0 py-1">
           <button
@@ -80,7 +123,7 @@ export default class DoughnutChart extends Component {
   }
 }
 
-DoughnutChart.propTypes = {
+MeterChart.propTypes = {
   data: PropTypes.object.isRequired,
   options: PropTypes.object,
   onGraphFlowBtnClick: PropTypes.func.isRequired,

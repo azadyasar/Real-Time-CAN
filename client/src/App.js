@@ -1,69 +1,86 @@
 import React, { Component } from "react";
-import "./App.css";
 import { Switch, Route } from "react-router-dom";
-import Comp1 from "./components/Comp1";
+import { ToastContainer } from "react-toastify";
+
+import { connect } from "react-redux";
+import { changeAllGraphFlow } from "./actions";
+
+import "./App.css";
+import "react-toastify/dist/ReactToastify.css";
+import "ladda/dist/ladda.min.css";
+import "mapbox-gl/src/css/mapbox-gl.css";
+
+import Landing from "./components/Landing";
 import NavBar from "./components/NavBar";
 import ChartsContainer from "./components/ChartsContainer";
-import classNames from "classnames";
+import MessagesMQTT from "./components/MessagesMQTT";
 
-export default class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      pauseAllGraphsFlow: true
-    };
-  }
+const mapStateToProps = state => {
+  console.debug("App mapStateToProps state: ", state);
+  return {
+    mqttClient: state.mqtt.mqttClient,
+    isAllGraphFlowPaused: state.chart.isAllGraphFlowPaused,
+    mqttObserverCallbacks: state.mqtt.mqttObserverCallbacks
+  };
+};
 
+const mapDispatchToProps = dispatch => {
+  return {
+    changeAllGraphFlow: signal => dispatch(changeAllGraphFlow(signal))
+  };
+};
+
+export class ConnectedApp extends Component {
   onStartAllGraphFlowBtnClick = event => {
     event.preventDefault();
-    this.setState({ pauseAllGraphsFlow: !this.state.pauseAllGraphsFlow });
+    this.props.changeAllGraphFlow(null);
+  };
+
+  onMqttMessageReceived = (topic, message) => {
+    console.debug("App onMqttMessageReceived: ", topic + " " + message);
+    console.log(this.props);
+    if (this.props.mqttObserverCallbacks[topic]) {
+      this.props.mqttObserverCallbacks[topic].forEach(cb => cb(topic, message));
+    }
   };
 
   render() {
+    console.debug("App.js render: this: ", this);
     return (
       <div className="App">
+        <ToastContainer position="bottom-left" autoClose={5000} />
         <NavBar />
         <Switch>
-          <Route exact path="/" component={Comp1} />
+          <Route exact path="/" component={Landing} />
           <Route
             path="/real-time-stream"
             render={routeProps => (
-              <ChartsContainer
+              <React.Fragment>
+                <ChartsContainer
+                  {...routeProps}
+                  pauseAllGraphsFlow={this.props.isAllGraphFlowPaused}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            path="/messages"
+            render={routeProps => (
+              <MessagesMQTT
                 {...routeProps}
-                pauseAllGraphsFlow={this.state.pauseAllGraphsFlow}
+                distributeMqttMessage={this.onMqttMessageReceived}
               />
             )}
           />
         </Switch>
-        <div className="toolbar">
-          <div className="item">
-            <button className="btn">
-              <i className="fa fa-2x fa-car" />
-            </button>
-          </div>
-          <div className="item">
-            <button className="btn">
-              <i className="fa fa-2x fa-cloud" />
-            </button>
-          </div>
-          <div className="item">
-            <button
-              className={classNames("btn", {
-                "btn-primary": this.state.pauseAllGraphsFlow,
-                "btn-secondary": !this.state.pauseAllGraphsFlow
-              })}
-              onClick={this.onStartAllGraphFlowBtnClick}
-            >
-              <i
-                className={classNames({
-                  "fa fa-2x fa-play-circle": this.state.pauseAllGraphsFlow,
-                  "fa fa-2x fa-pause-circle": !this.state.pauseAllGraphsFlow
-                })}
-              />
-            </button>
-          </div>
-        </div>
       </div>
     );
   }
 }
+
+const App = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ConnectedApp);
+
+export default App;
